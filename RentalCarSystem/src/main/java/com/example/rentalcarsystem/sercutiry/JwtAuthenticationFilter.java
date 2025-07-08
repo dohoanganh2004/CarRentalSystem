@@ -1,7 +1,9 @@
 package com.example.rentalcarsystem.sercutiry;
 
 import com.example.rentalcarsystem.exception.UnAuthorizedException;
+import com.example.rentalcarsystem.model.User;
 import com.example.rentalcarsystem.repository.RefreshTokenRepository;
+import com.example.rentalcarsystem.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
    private  final JwtTokenProvider jwtTokenProvider;
    private final CustomUserDetailsService userDetailsService;
    private final RefreshTokenRepository refreshTokenRepository;
-
+   private final UserRepository userRepository;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getTokenFromRequest(request);
@@ -35,9 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (!refreshTokenRepository.existsByToken(token)) {
                     throw new UnAuthorizedException("Refresh token expired");
                 }
-                String email = jwtTokenProvider.getEmailFromToken(token);
-                System.out.println("Email: " + email);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                Integer userId = jwtTokenProvider.getUserIdFromToken(token);
+                System.out.println("userId:" + userId);
+                User user = userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException("User Not Found"));
+                CustomUserDetails userDetails = new CustomUserDetails(user);
+
                 if (userDetails != null) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

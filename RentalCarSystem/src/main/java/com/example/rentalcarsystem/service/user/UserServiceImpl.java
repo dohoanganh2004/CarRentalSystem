@@ -24,9 +24,9 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     @Autowired
-    private  UserMapper userMapper;
+    private UserMapper userMapper;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -35,11 +35,9 @@ public class UserServiceImpl implements UserService{
     private final AuthenticationManager authenticationManager;
 
 
-
-
-
     /**
      * Login
+     *
      * @param authRequestDTO
      * @return
      */
@@ -58,71 +56,85 @@ public class UserServiceImpl implements UserService{
         return new AuthResponseDTO(token);
 
 
-
     }
 
 
     /**
      * Register
+     *
      * @param registerRequestDTO
      * @return
      */
     @Override
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
         User user = userRepository.findUserByEmail((registerRequestDTO.getEmail()));
-         if (user != null) {
-             throw new RuntimeException("User with email " + registerRequestDTO.getEmail() + " already exists");
-         }
+        if (user != null) {
+            throw new RuntimeException("User with email " + registerRequestDTO.getEmail() + " already exists");
+        }
         User registerUser = new User();
         registerUser.setFullName(registerRequestDTO.getFullName());
         registerUser.setEmail(registerRequestDTO.getEmail());
         registerUser.setPhoneNo(registerRequestDTO.getPhoneNo());
-        String enterPassword  = registerRequestDTO.getPassword();
+        String enterPassword = registerRequestDTO.getPassword();
         String confirmPassword = registerRequestDTO.getConfirmPassword();
         System.out.println("PhoneNo: " + registerRequestDTO.getPhoneNo());
-
-        if(!enterPassword.equals(confirmPassword)){
+        if (userRepository.existsByEmailAndPhoneNo(registerRequestDTO.getEmail(), registerRequestDTO.getPhoneNo())) {
+            throw new RuntimeException("User already exists");
+        }
+        if (!enterPassword.equals(confirmPassword)) {
             throw new RuntimeException("Passwords do not match");
         } else {
             registerUser.setPassword(passwordEncoder.encode(enterPassword));
         }
-        Role role =  roleRepository.findById(registerRequestDTO.getRoleId()).orElseThrow(() -> new RuntimeException("Role id not found"));
+        Role role = roleRepository.findById(registerRequestDTO.getRoleId()).orElseThrow(() -> new RuntimeException("Role id not found"));
         registerUser.setRole(role);
 
-        if(!registerRequestDTO.isAgreeStatus()) {
+        if (!registerRequestDTO.isAgreeStatus()) {
             throw new RuntimeException("Agree status not set");
         }
         userRepository.save(registerUser);
         log.info("User with email " + registerRequestDTO.getEmail() + " registered successfully");
-        System.out.println("PhoneNo:" +registerUser.getPhoneNo());
+        System.out.println("PhoneNo:" + registerUser.getPhoneNo());
         return userMapper.toRegisterResponseDTO(registerUser);
     }
 
     /**
      * Change profile
+     *
      * @param profileRequestDTO
      * @param id
      * @return
      */
     @Override
-    public ProfileResponseDTO profile(ProfileRequestDTO profileRequestDTO,Integer id) {
+    public ProfileResponseDTO profile(ProfileRequestDTO profileRequestDTO, Integer id) {
         User exisUser = userRepository.findUserById(id);
-        if(exisUser == null) {
+        if (exisUser == null) {
             throw new RuntimeException("User with id " + id + " not found");
         }
-        exisUser.setFullName(profileRequestDTO.getFullName());
-        exisUser.setPhoneNo(profileRequestDTO.getPhoneNumber());
-        exisUser.setNationalIDNo(profileRequestDTO.getNationalIDNo());
-        exisUser.setAddress(profileRequestDTO.getAddress());
-        exisUser.setDateOfBirth(profileRequestDTO.getBirthDate());
-        exisUser.setEmail(profileRequestDTO.getEmailAddress());
-        exisUser.setDrivingLicense(profileRequestDTO.getDrivingLicense());
-        System.out.println("PhoneNo:" +exisUser.getPhoneNo());
-        userRepository.save(exisUser);
-        ProfileResponseDTO profileResponseDTO = userMapper.toProfileResponseDTO(exisUser);
-        System.out.println("PhoneNo:" +profileResponseDTO.getPhoneNumber());
-        return profileResponseDTO;
-    }
+        if(userRepository.existsByEmailAndIdNot(profileRequestDTO.getEmailAddress(), id)) {
+         throw new RuntimeException("User with email " + profileRequestDTO.getEmailAddress() + " already exists");
+        }
+
+        if(userRepository.existsByPhoneNoAndIdNot(profileRequestDTO.getPhoneNumber(),id)) {
+            throw new RuntimeException("User with phone " + profileRequestDTO.getEmailAddress() + " already exists");
+        }
+
+
+            exisUser.setFullName(profileRequestDTO.getFullName());
+            exisUser.setPhoneNo(profileRequestDTO.getPhoneNumber());
+            exisUser.setNationalIDNo(profileRequestDTO.getNationalIDNo());
+            exisUser.setAddress(profileRequestDTO.getAddress());
+            exisUser.setDateOfBirth(profileRequestDTO.getBirthDate());
+            exisUser.setEmail(profileRequestDTO.getEmailAddress());
+            exisUser.setDrivingLicense(profileRequestDTO.getDrivingLicense());
+            System.out.println("PhoneNo:" + exisUser.getPhoneNo());
+            userRepository.save(exisUser);
+
+            ProfileResponseDTO profileResponseDTO = userMapper.toProfileResponseDTO(exisUser);
+            System.out.println("PhoneNo:" + profileResponseDTO.getPhoneNumber());
+            return profileResponseDTO;
+        }
+
 
     /**
      * Change password

@@ -18,4 +18,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     User findUserByEmail(@Size(max = 100) @NotNull String email);
 
     User findUserById(Integer id);
+
+    boolean existsByEmailAndPhoneNo(@Size(max = 100) @NotNull String email, @Size(max = 20) String phoneNo);
+
+    boolean existsByPhoneNoAndIdNot(@Size(max = 20) String phoneNo, Integer id);
+    boolean existsByEmailAndIdNot(@Size(max = 100) @NotNull String email, @Size(max = 20) Integer id);
+    @EntityGraph(attributePaths = "role")
+    Optional<User> findById(Integer id);
 }
