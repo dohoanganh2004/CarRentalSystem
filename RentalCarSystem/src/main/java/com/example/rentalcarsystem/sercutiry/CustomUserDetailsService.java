@@ -1,6 +1,5 @@
 package com.example.rentalcarsystem.sercutiry;
 
-import com.example.rentalcarsystem.dto.request.user.UserRequestDTO;
 import com.example.rentalcarsystem.model.User;
 import com.example.rentalcarsystem.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;

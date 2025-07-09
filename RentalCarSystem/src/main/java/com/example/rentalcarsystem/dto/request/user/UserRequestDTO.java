@@ -1,13 +1,7 @@
 package com.example.rentalcarsystem.dto.request.user;
 
-import com.example.rentalcarsystem.model.Role;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.hibernate.annotations.ColumnDefault;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

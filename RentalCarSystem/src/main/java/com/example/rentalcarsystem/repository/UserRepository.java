@@ -1,6 +1,5 @@
 package com.example.rentalcarsystem.repository;
 
-import com.example.rentalcarsystem.dto.request.user.UserRequestDTO;
 import com.example.rentalcarsystem.model.User;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

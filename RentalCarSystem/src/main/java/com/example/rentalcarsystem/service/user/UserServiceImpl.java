@@ -6,12 +6,18 @@ import com.example.rentalcarsystem.dto.response.user.PasswordResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.ProfileResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.RegisterResponseDTO;
 import com.example.rentalcarsystem.mapper.UserMapper;
+import com.example.rentalcarsystem.model.Carowner;
+import com.example.rentalcarsystem.model.Customer;
 import com.example.rentalcarsystem.model.Role;
 import com.example.rentalcarsystem.model.User;
+import com.example.rentalcarsystem.repository.CarOwnerRepository;
+import com.example.rentalcarsystem.repository.CustomerRepository;
 import com.example.rentalcarsystem.repository.RoleRepository;
 import com.example.rentalcarsystem.repository.UserRepository;
 import com.example.rentalcarsystem.sercutiry.CustomUserDetails;
+
 import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +39,8 @@ public class UserServiceImpl implements UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RoleRepository roleRepository;
     private final AuthenticationManager authenticationManager;
+    private final CustomerRepository customerRepository;
+    private final CarOwnerRepository carOwnerRepository;
 
 
     /**
@@ -65,6 +73,7 @@ public class UserServiceImpl implements UserService {
      * @param registerRequestDTO
      * @return
      */
+    @Transactional
     @Override
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
         User user = userRepository.findUserByEmail((registerRequestDTO.getEmail()));
@@ -93,8 +102,23 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Agree status not set");
         }
         userRepository.save(registerUser);
+        userRepository.flush();
         log.info("User with email " + registerRequestDTO.getEmail() + " registered successfully");
         System.out.println("PhoneNo:" + registerUser.getPhoneNo());
+        System.out.println("id:" + registerUser.getId());
+
+        if(registerRequestDTO.getRoleId() == 2) {
+            Carowner carowner = new Carowner();
+            carowner.setUser(registerUser);
+            carOwnerRepository.save(carowner);
+        }
+
+        if(registerRequestDTO.getRoleId() == 3) {
+            Customer customer = new Customer();
+            customer.setUser(registerUser);
+            customerRepository.save(customer);
+        }
+
         return userMapper.toRegisterResponseDTO(registerUser);
     }
 

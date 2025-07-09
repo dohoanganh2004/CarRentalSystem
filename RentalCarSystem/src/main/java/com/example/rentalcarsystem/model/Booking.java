@@ -22,7 +22,7 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CarID")
-    private Car carID;
+    private Car car;
 
     @Column(name = "StartDateTime")
     private Instant startDateTime;

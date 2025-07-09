@@ -1,37 +1,47 @@
+-- Tạo database
 CREATE DATABASE CarRentalSystem;
-
 USE CarRentalSystem;
+
+-- 1. Bảng Permission
 CREATE TABLE Permission (
-PermissionId INT AUTO_INCREMENT PRIMARY KEY,
-PermissionName VARCHAR(100),
-Link VARCHAR(500)
+    PermissionId INT AUTO_INCREMENT PRIMARY KEY,
+    PermissionName VARCHAR(100),
+    Link VARCHAR(500)
 );
 
-
-
-CREATE TABLE Role(
-RoleID INT AUTO_INCREMENT PRIMARY KEY,
-RoleName VARCHAR(20)
+-- 2. Bảng Role
+CREATE TABLE Role (
+    RoleID INT AUTO_INCREMENT PRIMARY KEY,
+    RoleName VARCHAR(20)
 );
 
+-- 3. Bảng Role - Permission
 CREATE TABLE Role_Permission (
-PermissionId INT,
-RoleID INT,
-PRIMARY KEY(PermissionId,RoleID),
-FOREIGN KEY (PermissionId) REFERENCES Permission(PermissionId),
-FOREIGN KEY (RoleID) REFERENCES Role(RoleID)
+    PermissionId INT,
+    RoleID INT,
+    PRIMARY KEY(PermissionId, RoleID),
+    FOREIGN KEY (PermissionId) REFERENCES Permission(PermissionId),
+    FOREIGN KEY (RoleID) REFERENCES Role(RoleID)
 );
 
+-- 4. Bảng User
 CREATE TABLE User (
-  UserID INT AUTO_INCREMENT PRIMARY KEY,
-  FullName VARCHAR(50),
-  Email VARCHAR(100),
-  Password VARCHAR(255),
-  RoleID INT,
-  Status BOOLEAN,
-  FOREIGN KEY (RoleID) REFERENCES Role(RoleID)
+    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    FullName VARCHAR(100) NOT NULL,
+    DateOfBirth DATE,
+    NationalIDNo VARCHAR(20) UNIQUE,
+    PhoneNo VARCHAR(20),
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Password VARCHAR(255) NOT NULL,
+    Address VARCHAR(255),
+    DrivingLicense VARCHAR(50),
+    Wallet DECIMAL(10,2) DEFAULT 0.0,
+    RoleID INT,
+    Status BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (RoleID) REFERENCES Role(RoleID)
 );
 
+-- 5. Bảng RefreshToken
 CREATE TABLE RefreshToken (
     TokenID INT AUTO_INCREMENT PRIMARY KEY,
     UserID INT,
@@ -41,45 +51,25 @@ CREATE TABLE RefreshToken (
     FOREIGN KEY (UserID) REFERENCES User(UserID)
 );
 
-
+-- 6. Bảng CarOwner
 CREATE TABLE CarOwner (
-    CarOwnerID INT AUTO_INCREMENT PRIMARY KEY,
-    Name VARCHAR(100),
-    DateOfBirth DATE,
-    NationalIDNo VARCHAR(20),
-    PhoneNo VARCHAR(20),
-    Email VARCHAR(100),
-     Address VARCHAR(255),
-    DrivingLicense VARCHAR(50),
-    Wallet DECIMAL(10, 2),
-    UserID INT,
-    FOREIGN KEY (UserID) REFERENCES User(UserID)
-  
+    CarOwnerID INT PRIMARY KEY,
+    FOREIGN KEY (CarOwnerID) REFERENCES User(UserID) ON DELETE CASCADE
 );
 
-
+-- 7. Bảng Customer
 CREATE TABLE Customer (
-    CustomerID INT AUTO_INCREMENT PRIMARY KEY,
-    Name VARCHAR(100),
-    DateOfBirth DATE,
-    NationalIDNo VARCHAR(20),
-    PhoneNo VARCHAR(20),
-    Email VARCHAR(100),
-    Address VARCHAR(255),
-    DrivingLicense VARCHAR(50),
-    Wallet DECIMAL(10, 2),
-    UserID INT,
-    FOREIGN KEY (UserID) REFERENCES User(UserID)
-    
+    CustomerID INT PRIMARY KEY,
+    FOREIGN KEY (CustomerID) REFERENCES User(UserID) ON DELETE CASCADE
 );
 
-CREATE TABLE CarImage(
-CarImageID INT AUTO_INCREMENT PRIMARY KEY,
-CarImageLink TEXT
+-- 8. Bảng CarImage
+CREATE TABLE CarImage (
+    CarImageID INT AUTO_INCREMENT PRIMARY KEY,
+    CarImageLink TEXT
 );
 
-
-
+-- 9. Bảng Car
 CREATE TABLE Car (
     CarID INT AUTO_INCREMENT PRIMARY KEY,
     CarOwnerID INT,
@@ -102,10 +92,10 @@ CREATE TABLE Car (
     TermsOfUse TEXT,
     CarImageID INT,
     FOREIGN KEY (CarOwnerID) REFERENCES CarOwner(CarOwnerID),
-    FOREIGN KEY ( CarImageID) REFERENCES CarImage(CarImageID)
+    FOREIGN KEY (CarImageID) REFERENCES CarImage(CarImageID)
 );
 
-
+-- 10. Bảng Booking
 CREATE TABLE Booking (
     BookingNo INT AUTO_INCREMENT PRIMARY KEY,
     CustomerID INT,
@@ -119,7 +109,7 @@ CREATE TABLE Booking (
     FOREIGN KEY (CarID) REFERENCES Car(CarID)
 );
 
-
+-- 11. Bảng Feedback
 CREATE TABLE Feedback (
     FeedbackID INT AUTO_INCREMENT PRIMARY KEY,
     BookingNo INT,
@@ -128,42 +118,31 @@ CREATE TABLE Feedback (
     DateTime DATETIME,
     FOREIGN KEY (BookingNo) REFERENCES Booking(BookingNo)
 );
+-- Sua bang CarImage
+ALTER TABLE CarImage 
+DROP COLUMN CarImageLink,
+ADD COLUMN FrontImageUrl VARCHAR(255),
+ADD COLUMN BackImageUrl VARCHAR(255),
+ADD COLUMN LeftImageUrl VARCHAR(255),
+ADD COLUMN RightImageUrl VARCHAR(255);
+-- Sua bang Car
+ALTER TABLE car
+ADD COLUMN RegistrationPaperUrl VARCHAR(255),
+ADD COLUMN CertificateOfInspectionUrl VARCHAR(255),
+ADD COLUMN InsuranceUrl VARCHAR(255);
 
+
+-- Insert Role
 INSERT INTO Role (RoleName) VALUES 
 ('Admin'),
 ('CarOwner'),
 ('Customer');
 
 
-INSERT INTO User (FullName, Email, Password, RoleID, Status) VALUES 
-('Nguyen Van A', 'admin@example.com', 'admin123', 1, TRUE),
-('Tran Van B', 'owner@example.com', 'owner123', 2, TRUE),
-('Le Thi C', 'customer@example.com', 'customer123', 3, TRUE);
-
-INSERT INTO CarOwner (Name, DateOfBirth, NationalIDNo, PhoneNo, Email, Address, DrivingLicense, Wallet, UserID) VALUES 
-('Tran Van B', '1985-05-20', '123456789', '0909123456', 'owner@example.com', '123 Le Loi, HCM', 'B123456', 1000000.00, 2);
-
-
-INSERT INTO Customer (Name, DateOfBirth, NationalIDNo, PhoneNo, Email, Address, DrivingLicense, Wallet, UserID) VALUES 
-('Le Thi C', '1990-08-15', '987654321', '0912345678', 'customer@example.com', '456 Tran Hung Dao, HCM', 'C654321', 500000.00, 3);
-
-
-INSERT INTO CarImage (CarImageLink) VALUES 
-('https://example.com/images/car1.jpg'),
-('https://example.com/images/car2.jpg');
-
-
-INSERT INTO Car (CarOwnerID, Name, LicensePlate, Brand, Model, Color, NumberOfSeats, ProductionYears, TransmissionType, FuelType, Mileage, FuelConsumption, BasePrice, Deposit, Address, Description, AdditionalFunctions, TermsOfUse, CarImageID) VALUES 
-(1, 'Toyota Vios', '51A-12345', 'Toyota', 'Vios E', 'Black', 5, 2020, 'Automatic', 'Petrol', 30000, 6.5, 500000.00, 1000000.00, '123 Le Lai, HCM', 'Clean, good condition', 'GPS, Bluetooth', 'No smoking, return with full tank', 1);
-
-
-INSERT INTO Booking (CustomerID, CarID, StartDateTime, EndDateTime, DriversInformation, PaymentMethod, Status) VALUES 
-(1, 1, '2025-06-01 08:00:00', '2025-06-05 18:00:00', 'Customer will drive', 'Credit Card', 'Confirmed');
-
-INSERT INTO Feedback (BookingNo, Ratings, Content, DateTime) VALUES 
-(1, 5, 'Great experience! The car was clean and the owner was helpful.', '2025-06-06 10:00:00');
 
 
 
-
-
+ select  * from RefreshToken
+ select * from user
+ select * from CarOwner
+ select * from Customer

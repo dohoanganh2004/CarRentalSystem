@@ -15,7 +15,6 @@ import lombok.Setter;
 public class Role {
     @Id
     @Column(name = "RoleID", nullable = false)
-
     private Integer id;
 
     @Size(max = 20)
