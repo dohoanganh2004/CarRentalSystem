@@ -13,6 +13,7 @@ import lombok.Setter;
 public class Carimage {
     @Id
     @Column(name = "CarImageID", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Size(max = 255)

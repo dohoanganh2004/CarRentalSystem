@@ -14,6 +14,7 @@ import java.time.Instant;
 public class Refreshtoken {
     @Id
     @Column(name = "TokenID", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)

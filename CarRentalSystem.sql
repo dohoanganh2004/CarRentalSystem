@@ -146,3 +146,6 @@ INSERT INTO Role (RoleName) VALUES
  select * from user
  select * from CarOwner
  select * from Customer
+ select * from CarImage
+ select * from Booking
+ select * from feedback

@@ -13,11 +13,12 @@ import java.time.Instant;
 public class Feedback {
     @Id
     @Column(name = "FeedbackID", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "BookingNo")
-    private Booking bookingNo;
+    private Booking booking;
 
     @Column(name = "Ratings")
     private Integer ratings;

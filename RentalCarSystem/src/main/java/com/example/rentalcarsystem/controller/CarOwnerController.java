@@ -4,6 +4,7 @@
 //import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 //import com.example.rentalcarsystem.model.Car;
 //import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
+//import com.example.rentalcarsystem.service.car.CarService;
 //import com.example.rentalcarsystem.service.car.CarServiceImpl;
 //import jakarta.servlet.http.HttpServletRequest;
 //import org.springframework.beans.factory.annotation.Autowired;
@@ -11,34 +12,17 @@
 //import org.springframework.web.bind.annotation.*;
 //
 //import java.util.List;
-//import java.util.Optional;
 //
 //@RestController
-//@RequestMapping("/car")
-//public class CarController {
-//    @Autowired
-//    private CarServiceImpl carService;
-//    @Autowired
-//    private JwtTokenProvider jwtTokenProvider;
+//@RequestMapping("/car-owner")
+//public class CarOwnerController {
+//private final CarServiceImpl carService;
+//private final JwtTokenProvider jwtTokenProvider;
 //
-//    /**
-//     * Show all car
-//     * @return
-//     */
-//    @GetMapping
-//   public List<Car> getAllCars() {
-//       return carService.getAllCars();
-//   }
-//
-//    /**
-//     * Get car by Id to view detail
-//     * @param id
-//     * @return
-//     */
-//   @GetMapping("/{id}")
-//   public Optional<Car> getCarById(@PathVariable int id) {
-//       return  carService.getCarById(id);
-//   }
+//public CarOwnerController(CarServiceImpl carService, JwtTokenProvider jwtTokenProvider) {
+//    this.carService = carService;
+//    this.jwtTokenProvider = jwtTokenProvider;
+//}
 //
 //    /**
 //     * Add car for rental
@@ -50,8 +34,9 @@
 //        String token = getTokenFromRequest(request);
 //        int userId = jwtTokenProvider.getUserIdFromToken(token);
 //        Car car = carService.creareNewCar(carRequestDTO,userId);
-//        return ResponseEntity.ok(new CarResponseDTO("Đăng ký xe thành công!"));
+//        return ResponseEntity.ok(new CarResponseDTO();
 //    }
+//
 //
 //    /**
 //     * Owner can view their car
@@ -59,7 +44,7 @@
 //     * @return
 //     */
 //    @GetMapping("/myCar")
-//    public List<Car> getCarByOwnerId( HttpServletRequest request) {
+//    public List<Car> getCarByOwnerId(HttpServletRequest request) {
 //        String token = getTokenFromRequest(request);
 //        int userId = jwtTokenProvider.getUserIdFromToken(token);
 //        return carService.getCarByOwnerId(userId);

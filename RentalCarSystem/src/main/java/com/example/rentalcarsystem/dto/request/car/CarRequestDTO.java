@@ -15,8 +15,7 @@ import java.math.BigDecimal;
 @Data
 public class CarRequestDTO implements Serializable {
     private Integer carOwnerId;
-    @NotBlank(message = "Please enter name!")
-    private String name;
+
     @NotBlank(message = "Please enter license plate!")
     private String licensePlate;
     @NotBlank(message = "Please enter color!")
