@@ -22,28 +22,28 @@ public class CustomerController {
         this.carService = carService;
     }
 
-    /**
-     * Search a car from customer
-     * @param location
-     * @param pickupDateTime
-     * @param dropOffDateTime
-     * @param page
-     * @param size
-     * @param sortBy
-     * @param order
-     * @return
-     */
-    @GetMapping("/search-car")
-    public Page<CarResponseDTO> searchCars(String location
-            , LocalDateTime pickupDateTime
-            , LocalDateTime dropOffDateTime
-            , Integer page
-            , Integer size
-            , String sortBy, String order) {
-        Page<CarResponseDTO> availableCars = carService.getAvailableCars(location, pickupDateTime, dropOffDateTime, page, size, sortBy, order);
-        return availableCars;
-
-    }
+//    /**
+//     * Search a car from customer
+//     * @param location
+//     * @param pickupDateTime
+//     * @param dropOffDateTime
+//     * @param page
+//     * @param size
+//     * @param sortBy
+//     * @param order
+//     * @return
+//     */
+//    @GetMapping("/search-car")
+//    public Page<CarResponseDTO> searchCars(String location
+//            , LocalDateTime pickupDateTime
+//            , LocalDateTime dropOffDateTime
+//            , Integer page
+//            , Integer size
+//            , String sortBy, String order) {
+//        Page<CarResponseDTO> availableCars = carService.getAvailableCars(location, pickupDateTime, dropOffDateTime, page, size, sortBy, order);
+//        return availableCars;
+//
+//    }
 
     /**
      * View Detail Of Car With ID

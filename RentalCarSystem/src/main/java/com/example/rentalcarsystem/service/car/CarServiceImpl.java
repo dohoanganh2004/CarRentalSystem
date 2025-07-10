@@ -8,6 +8,7 @@ import com.example.rentalcarsystem.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -33,17 +34,20 @@ public class CarServiceImpl implements CarService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final FeedBackRepository feedBackRepository;
+    private final CarImageRepository carImageRepository;
 
     public CarServiceImpl(CarRepository carRepository,
                           CarOwnerRepository carOwnerRepository,
                           UserRepository userRepository,
                           BookingRepository bookingRepository,
-                          FeedBackRepository feedBackRepository) {
+                          FeedBackRepository feedBackRepository,
+                           CarImageRepository carImageRepository) {
         this.carRepository = carRepository;
         this.carOwnerRepository = carOwnerRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.feedBackRepository = feedBackRepository;
+        this.carImageRepository= carImageRepository;
     }
 
     /**
@@ -54,26 +58,26 @@ public class CarServiceImpl implements CarService {
      */
     @Override
     public Car creareNewCar(CarRequestDTO carRequestDTO, Integer carOwnerId) {
-        String rootPath = "C:\\Users\\PC\\Desktop\\CarRentalSystem\\RentalCarSystem\\image";
 
-        // Chỉ save ảnh nếu file tồn tại
+
+
         if (carRequestDTO.getFrontImage() != null && !carRequestDTO.getFrontImage().isEmpty()) {
-            String frontImageUrl = saveFile(carRequestDTO.getFrontImage(), rootPath, "frontImage");
+            String frontImageUrl = saveFile(carRequestDTO.getFrontImage(), "uploads", "frontImage");
             carRequestDTO.setFrontImageUrl(frontImageUrl);
         }
 
         if (carRequestDTO.getBackImage() != null && !carRequestDTO.getBackImage().isEmpty()) {
-            String backImageUrl = saveFile(carRequestDTO.getBackImage(), rootPath, "backImage");
+            String backImageUrl = saveFile(carRequestDTO.getBackImage(), "uploads", "backImage");
             carRequestDTO.setBackImageUrl(backImageUrl);
         }
 
         if (carRequestDTO.getRightImage() != null && !carRequestDTO.getRightImage().isEmpty()) {
-            String rightImageUrl = saveFile(carRequestDTO.getRightImage(), rootPath, "rightImage");
+            String rightImageUrl = saveFile(carRequestDTO.getRightImage(), "uploads", "rightImage");
             carRequestDTO.setRightImageUrl(rightImageUrl);
         }
 
         if (carRequestDTO.getLeftImage() != null && !carRequestDTO.getLeftImage().isEmpty()) {
-            String leftImageUrl = saveFile(carRequestDTO.getLeftImage(), rootPath, "leftImage");
+            String leftImageUrl = saveFile(carRequestDTO.getLeftImage(), "uploads", "leftImage");
             carRequestDTO.setLeftImageUrl(leftImageUrl);
         }
 
@@ -109,35 +113,114 @@ public class CarServiceImpl implements CarService {
 
 
     /**
-     * Find Car By Owner ID
-     * @param id
+     * Get Oner Car
+     * @param ownerId
      * @return
      */
     @Override
-    public List<Car> getCarByOwnerId(int id) {
-        List<Car> listCarOfOwner = carRepository.findAll();
-        return listCarOfOwner;
+    public List<CarResponseDTO> getCarByOwnerId(int ownerId) {
+        List<Car> listCarOfOwner = carRepository.getAllByCarOwner_Id(ownerId);
+        List<CarResponseDTO> carResponseDTOList = new ArrayList<>();
+        for (Car car : listCarOfOwner) {
+            CarResponseDTO carResponseDTO = toDTO(car);
+            carResponseDTOList.add(carResponseDTO);
+        }
+        return carResponseDTOList;
     }
 
-    /**
-     * Get all car available with serach
-     * @param location
-     * @param pickupDateTime
-     * @param dropOffDateTime
-     * @param page
-     * @param size
-     * @param sortBy
-     * @param order
-     * @return
-     */
-    @Override
-    public Page<CarResponseDTO> getAvailableCars(String location, LocalDateTime pickupDateTime,
-                                                 LocalDateTime dropOffDateTime,
-                                                 Integer page,
-                                                 Integer size, String sortBy, String order) {
+    @Transactional
+    public CarDetailResponseDTO updateCarDetails(CarRequestDTO carRequestDTO, Integer carId) {
 
-        return null;
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car with id " + carId + " not found"));
+
+
+        car.setLicensePlate(carRequestDTO.getLicensePlate());
+        car.setColor(carRequestDTO.getColor());
+        car.setBrand(carRequestDTO.getBrandName());
+        car.setModel(carRequestDTO.getModel());
+        car.setProductionYears(carRequestDTO.getProductionYear());
+        car.setNumberOfSeats(carRequestDTO.getNoOfSeats());
+        car.setTransmissionType(carRequestDTO.getTransmission());
+        car.setFuelType(carRequestDTO.getFuel());
+        car.setMileage(carRequestDTO.getMileage());
+        car.setFuelConsumption(carRequestDTO.getFuelConsumption());
+        car.setDescription(carRequestDTO.getDescription());
+        car.setAdditionalFunctions(carRequestDTO.getAdditionalFunctions());
+        car.setBasePrice(carRequestDTO.getBasePrice());
+        car.setDeposit(carRequestDTO.getDeposit());
+        car.setTermsOfUse(carRequestDTO.getTermsOfUse());
+
+
+        String fullAddress = String.join(" - ",
+                carRequestDTO.getHouseNumberOrStreet(),
+                carRequestDTO.getWard(),
+                carRequestDTO.getDistrict(),
+                carRequestDTO.getCityOrProvince());
+        car.setAddress(fullAddress);
+        car.setStatus(carRequestDTO.getStatus());
+
+
+        if (carRequestDTO.getRegistrationPaper() != null && !carRequestDTO.getRegistrationPaper().isEmpty()) {
+            String url = saveFile(carRequestDTO.getRegistrationPaper(), "uploads", "documents/registration");
+            car.setRegistrationPaperUrl(url);
+        }
+
+        if (carRequestDTO.getCertificateOfInspection() != null && !carRequestDTO.getCertificateOfInspection().isEmpty()) {
+            String url = saveFile(carRequestDTO.getCertificateOfInspection(), "uploads", "documents/inspection");
+            car.setCertificateOfInspectionUrl(url);
+        }
+
+        if (carRequestDTO.getInsurance() != null && !carRequestDTO.getInsurance().isEmpty()) {
+            String url = saveFile(carRequestDTO.getInsurance(), "uploads", "documents/insurance");
+            car.setInsuranceUrl(url);
+        }
+
+
+        Carimage carImage = car.getCarImage();
+        if (carImage != null) {
+            if (carRequestDTO.getFrontImage() != null && !carRequestDTO.getFrontImage().isEmpty()) {
+                carImage.setFrontImageUrl(saveFile(carRequestDTO.getFrontImage(), "uploads", "image/frontImage"));
+            }
+            if (carRequestDTO.getBackImage() != null && !carRequestDTO.getBackImage().isEmpty()) {
+                carImage.setBackImageUrl(saveFile(carRequestDTO.getBackImage(), "uploads", "image/backImage"));
+            }
+            if (carRequestDTO.getLeftImage() != null && !carRequestDTO.getLeftImage().isEmpty()) {
+                carImage.setLeftImageUrl(saveFile(carRequestDTO.getLeftImage(), "uploads", "image/leftImage"));
+            }
+            if (carRequestDTO.getRightImage() != null && !carRequestDTO.getRightImage().isEmpty()) {
+                carImage.setRightImageUrl(saveFile(carRequestDTO.getRightImage(), "uploads", "image/rightImage"));
+            }
+            carImageRepository.save(carImage);
+        }
+
+
+        Car updatedCar = carRepository.save(car);
+
+
+        return toCarDetailsResponseDTO(updatedCar);
     }
+
+
+//    /**
+//     * Get all car available with serach
+//     * @param location
+//     * @param pickupDateTime
+//     * @param dropOffDateTime
+//     * @param page
+//     * @param size
+//     * @param sortBy
+//     * @param order
+//     * @return
+//     */
+//    @Override
+//    public Page<CarResponseDTO> getAvailableCars(String location, LocalDateTime pickupDateTime,
+//                                                 LocalDateTime dropOffDateTime,
+//                                                 Integer page,
+//                                                 Integer size, String sortBy, String order) {
+//
+//        return null;
+//    }
 
     /**
      * Change information from CarRequestDTO to Car
@@ -153,7 +236,7 @@ public class CarServiceImpl implements CarService {
         String carName = carRequestDTO.getBrandName().
                 concat(" ").concat(carRequestDTO.getModel()).concat(" ").
                 concat(carRequestDTO.getProductionYear().toString());
-        car.setName(carName);
+
         car.setLicensePlate(carRequestDTO.getLicensePlate());
         car.setBrand(carRequestDTO.getBrandName());
         car.setModel(carRequestDTO.getModel());
@@ -177,6 +260,7 @@ public class CarServiceImpl implements CarService {
         car.setDescription(carRequestDTO.getDescription());
         car.setAdditionalFunctions(carRequestDTO.getAdditionalFunctions());
         car.setTermsOfUse(carRequestDTO.getTermsOfUse());
+        car.setStatus("Available");
         car.setRegistrationPaperUrl(carRequestDTO.getRegistrationPaperUrl());
         car.setCertificateOfInspectionUrl(carRequestDTO.getCertificateOfInspectionUrl());
         car.setInsuranceUrl(carRequestDTO.getInsuranceUrl());
@@ -199,7 +283,7 @@ public class CarServiceImpl implements CarService {
      * @param car
      * @return
      */
-    public CarResponseDTO toDTO(Car car,LocalDateTime pickUpTime, LocalDateTime dropOffTime) {
+    public CarResponseDTO toSearchDTO(Car car,LocalDateTime pickUpTime, LocalDateTime dropOffTime) {
         CarResponseDTO carResponseDTO = new CarResponseDTO();
         carResponseDTO.setName(car.getName());
         carResponseDTO.setFrontImageUrl(car.getCarImage().getFrontImageUrl());
@@ -215,6 +299,26 @@ public class CarServiceImpl implements CarService {
         carResponseDTO.setLocation(location);
         String status = addStatus(car.getId(),pickUpTime,dropOffTime);
         carResponseDTO.setStatus(status);
+        return carResponseDTO;
+    }
+
+    /**
+     * Cais nay rieng cho my car // roi vai of , thoi lam tam , toi uu sau
+     * @param car
+     * @return
+     */
+    public CarResponseDTO toDTO(Car car) {
+        CarResponseDTO carResponseDTO = new CarResponseDTO();
+        carResponseDTO.setName(car.getName());
+        carResponseDTO.setFrontImageUrl(car.getCarImage().getFrontImageUrl());
+        carResponseDTO.setBackImageUrl(car.getCarImage().getBackImageUrl());
+        carResponseDTO.setLeftImageUrl(car.getCarImage().getLeftImageUrl());
+        carResponseDTO.setRightImageUrl(car.getCarImage().getRightImageUrl());
+        Integer rating = findRatingOfCar(car.getId());
+        carResponseDTO.setRating(rating);
+        carResponseDTO.setNoOfRides(car.getDeposit());
+        carResponseDTO.setPrice(car.getBasePrice());
+        carResponseDTO.setStatus(car.getStatus());
         return carResponseDTO;
     }
 

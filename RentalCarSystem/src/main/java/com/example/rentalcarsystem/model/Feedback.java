@@ -13,7 +13,6 @@ import java.time.Instant;
 public class Feedback {
     @Id
     @Column(name = "FeedbackID", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)

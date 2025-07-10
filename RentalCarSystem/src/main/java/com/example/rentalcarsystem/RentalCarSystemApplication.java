@@ -14,7 +14,7 @@ public class RentalCarSystemApplication {
         CarServiceImpl carService = context.getBean(CarServiceImpl.class);
 
         System.out.println(carService.findRatingOfCar(1));
-        System.out.println(carService.addStatus(1));
+
 
     }
 

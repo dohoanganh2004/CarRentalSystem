@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -15,7 +14,6 @@ import java.math.BigDecimal;
 public class Car {
     @Id
     @Column(name = "CarID", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -88,20 +86,18 @@ public class Car {
     @JoinColumn(name = "CarImageID")
     private Carimage carImage;
 
-    @Transient
-    private MultipartFile registrationPaper;
+    @Size(max = 50)
+    @Column(name = "Status", length = 50)
+    private String status;
+
     @Size(max = 255)
     @Column(name = "RegistrationPaperUrl")
     private String registrationPaperUrl;
 
-    @Transient
-    private MultipartFile certificateOfInspection;
     @Size(max = 255)
     @Column(name = "CertificateOfInspectionUrl")
     private String certificateOfInspectionUrl;
 
-    @Transient
-    private MultipartFile insurance;
     @Size(max = 255)
     @Column(name = "InsuranceUrl")
     private String insuranceUrl;

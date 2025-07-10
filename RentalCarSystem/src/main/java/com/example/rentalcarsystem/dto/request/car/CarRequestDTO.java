@@ -1,12 +1,7 @@
 package com.example.rentalcarsystem.dto.request.car;
 
-import com.example.rentalcarsystem.model.Carimage;
-import com.example.rentalcarsystem.service.car.CarService;
-import jakarta.persistence.Column;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +49,8 @@ public class CarRequestDTO implements Serializable {
     private BigDecimal deposit;
     @NotBlank(message = "Please choose term of use!")
     private String termsOfUse;
+    @NotBlank(message = "Please choose status!")
+    private String status;
 
 
     private MultipartFile registrationPaper;

@@ -1,7 +1,6 @@
 package com.example.rentalcarsystem.repository;
 
 import com.example.rentalcarsystem.model.Booking;
-import com.example.rentalcarsystem.model.Car;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

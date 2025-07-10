@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Getter
 @Setter
 @Entity
@@ -13,7 +12,6 @@ import lombok.Setter;
 public class Carimage {
     @Id
     @Column(name = "CarImageID", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Size(max = 255)
@@ -34,5 +32,4 @@ public class Carimage {
 
     @OneToOne(mappedBy = "carImage", cascade = CascadeType.ALL)
     private Car car;
-
 }

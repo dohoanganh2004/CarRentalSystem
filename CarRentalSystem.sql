@@ -91,6 +91,7 @@ CREATE TABLE Car (
     AdditionalFunctions TEXT,
     TermsOfUse TEXT,
     CarImageID INT,
+    Status  VARCHAR(50),
     FOREIGN KEY (CarOwnerID) REFERENCES CarOwner(CarOwnerID),
     FOREIGN KEY (CarImageID) REFERENCES CarImage(CarImageID)
 );
@@ -139,13 +140,26 @@ INSERT INTO Role (RoleName) VALUES
 ('Customer');
 
 
+INSERT INTO Booking (CustomerID, CarID, StartDateTime, EndDateTime, DriversInformation, PaymentMethod, Status)
+VALUES
+(3, 1, '2025-07-01 08:00:00', '2025-07-03 08:00:00', 'Driver A', 'Credit Card', 'Completed'),
+(3, 1, '2025-07-04 09:00:00', '2025-07-06 09:00:00', 'Driver B', 'Cash', 'Completed'),
+(19, 1, '2025-07-07 10:00:00', '2025-07-08 18:00:00', 'Driver C', 'Bank Transfer', 'Completed');
+
+INSERT INTO Feedback (BookingNo, Ratings, Content, DateTime)
+VALUES
+(2, 5, 'Dịch vụ tuyệt vời, xe mới và sạch sẽ.', '2025-07-03 12:00:00'),
+(3, 4, 'Xe chạy ổn định, tài xế thân thiện.', '2025-07-06 14:00:00'),
+(4, 3, 'Xe khá ổn nhưng hơi trễ giờ giao.', '2025-07-08 19:00:00');
 
 
 
  select  * from RefreshToken
  select * from user
+ select * from car
  select * from CarOwner
  select * from Customer
  select * from CarImage
  select * from Booking
+ 
  select * from feedback
