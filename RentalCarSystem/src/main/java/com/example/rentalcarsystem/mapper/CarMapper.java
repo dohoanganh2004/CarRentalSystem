@@ -21,7 +21,7 @@ public class CarMapper {
     }
 
     public CarResponseDTO toDTO(Car car) {
-        Integer carRating = findRatingOfCar(car.getId());
+        Double carRating = findRatingOfCar(car.getId());
         CarResponseDTO dto = new CarResponseDTO();
         dto.setName(car.getName());
         dto.setRating(carRating);
@@ -113,15 +113,17 @@ public class CarMapper {
     }
 
     /**
-     * Method to get rating of car
+     * Method to get  rating of car
      *
      * @param carId
      * @return
      */
-    public Integer findRatingOfCar(Integer carId) {
+    public Double findRatingOfCar(Integer carId) {
         List<Booking> listBooking = bookingRepository.findByCarId(carId);
-        int sumRating = 0;
+        double sumRating = 0;
         int totalFeedbackCount = 0;
+        double averageRating = 0.0;
+        double rating = 0;
 
         for (Booking booking : listBooking) {
             List<Feedback> feedbacks = feedBackRepository.findByBookingId(booking.getId());
@@ -134,10 +136,12 @@ public class CarMapper {
         }
 
         if (totalFeedbackCount == 0) {
-            return 0;
-        }
+            rating = 0;
 
-        return sumRating / totalFeedbackCount;
+        }
+          averageRating =   sumRating / totalFeedbackCount;
+          rating = Math.ceil(averageRating*2)/2;
+        return rating;
     }
 
 }

@@ -10,4 +10,6 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByCarId(Integer carId);
     boolean existsByCarId(Integer carId);
+
+    Booking findBookingById(Integer id);
 }

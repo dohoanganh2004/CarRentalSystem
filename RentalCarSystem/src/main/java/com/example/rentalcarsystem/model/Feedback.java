@@ -3,6 +3,7 @@ package com.example.rentalcarsystem.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
@@ -12,8 +13,8 @@ import java.time.Instant;
 @Table(name = "feedback")
 public class Feedback {
     @Id
-    @Column(name = "FeedbackID", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "FeedbackID", nullable = false)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -21,12 +22,13 @@ public class Feedback {
     private Booking booking;
 
     @Column(name = "Ratings")
-    private Integer ratings;
+    private Double ratings;
 
     @Lob
     @Column(name = "Content")
     private String content;
 
+    @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "DateTime")
     private Instant dateTime;
 

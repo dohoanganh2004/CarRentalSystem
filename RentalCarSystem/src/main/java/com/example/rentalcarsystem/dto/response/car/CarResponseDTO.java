@@ -15,7 +15,7 @@ public class CarResponseDTO implements Serializable {
     private String backImageUrl;
     private String rightImageUrl;
     private String leftImageUrl;
-    private Integer rating;
+    private Double rating;
     private Integer noOfRides;
     private BigDecimal price;
     private String location;

@@ -59,6 +59,9 @@ public class CarServiceImpl implements CarService {
     public CarResponseDTO creareNewCar(CarRequestDTO carRequestDTO, HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int carOwnerId = jwtTokenProvider.getUserIdFromToken(token);
+        if (carRepository.existsByLicensePlate(carRequestDTO.getLicensePlate())) {
+            throw new RuntimeException("Car already exists");
+        }
 
         Carowner carowner = carOwnerRepository.findById(carOwnerId).orElseThrow(() -> new RuntimeException("Car owner not found"));
 
@@ -147,7 +150,8 @@ public class CarServiceImpl implements CarService {
     public ListResultResponseDTO<CarResponseDTO> searchCar(String location, Instant startDateTime, Instant endDateTime) {
         List<Car> listAvailableCar = carRepository.searchAvailableCars(location, startDateTime, endDateTime);
         if (listAvailableCar.isEmpty()) {
-            return new ListResultResponseDTO("No result", Collections.emptyList());
+            return new ListResultResponseDTO("No cars match your credentials, please try \n" +
+                    "again", Collections.emptyList());
         }
         List<CarResponseDTO> carResponseDTOList = new ArrayList<>();
         for (Car car : listAvailableCar) {

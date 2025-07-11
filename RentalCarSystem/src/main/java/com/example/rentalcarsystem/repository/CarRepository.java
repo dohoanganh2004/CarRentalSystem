@@ -1,6 +1,7 @@
 package com.example.rentalcarsystem.repository;
 
 import com.example.rentalcarsystem.model.Car;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,7 @@ import java.util.List;
 public interface CarRepository extends JpaRepository<Car,Integer> {
     List<Car> getAllByCarOwner_Id(Integer carOwnerId);
 
+    boolean existsByLicensePlate(@Size(max = 20) String licensePlate);
 
     @Query("""
 SELECT c FROM Car c

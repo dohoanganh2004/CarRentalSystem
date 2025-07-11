@@ -47,7 +47,7 @@ CREATE TABLE RefreshToken (
     UserID INT,
     Token TEXT,
     ExpiryDate DATETIME,
-    IsRevoked BOOLEAN DEFAULT FALSE,
+  
     FOREIGN KEY (UserID) REFERENCES User(UserID)
 );
 
@@ -116,7 +116,7 @@ CREATE TABLE Feedback (
     BookingNo INT,
     Ratings INT CHECK (Ratings >= 1 AND Ratings <= 5),
     Content TEXT,
-    DateTime DATETIME,
+    DateTime DATETIME ,
     FOREIGN KEY (BookingNo) REFERENCES Booking(BookingNo)
 );
 -- Sua bang CarImage
@@ -131,6 +131,9 @@ ALTER TABLE car
 ADD COLUMN RegistrationPaperUrl VARCHAR(255),
 ADD COLUMN CertificateOfInspectionUrl VARCHAR(255),
 ADD COLUMN InsuranceUrl VARCHAR(255);
+-- sua bang feedback
+ALTER TABLE feedback
+modify DateTime DATETIME DEFAULT CURRENT_TIMESTAMP
 
 
 -- Insert Role
@@ -161,5 +164,9 @@ VALUES
  select * from Customer
  select * from CarImage
  select * from Booking
- 
+ select * from role
+ update role
+ set RoleName = 'ROLE_ADMIN'
+ where  RoleID = 1
+
  select * from feedback
