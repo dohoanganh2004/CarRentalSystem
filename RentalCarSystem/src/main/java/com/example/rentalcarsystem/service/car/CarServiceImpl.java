@@ -3,6 +3,7 @@ package com.example.rentalcarsystem.service.car;
 import com.example.rentalcarsystem.dto.request.car.CarRequestDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
+import com.example.rentalcarsystem.dto.response.other.ListResultResponseDTO;
 import com.example.rentalcarsystem.mapper.CarMapper;
 import com.example.rentalcarsystem.model.*;
 import com.example.rentalcarsystem.repository.*;
@@ -16,9 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -37,21 +37,13 @@ public class CarServiceImpl implements CarService {
     private final CarMapper carMapper;
     private final FileStoreService fileStoreService;
 
-    public CarServiceImpl(CarRepository carRepository,
-                          CarOwnerRepository carOwnerRepository,
-                          UserRepository userRepository,
-                          BookingRepository bookingRepository,
-                          FeedBackRepository feedBackRepository,
-                           CarImageRepository carImageRepository,
-                          JwtTokenProvider jwtTokenProvider,
-                          CarMapper carMapper,
-                          FileStoreService fileStoreService) {
+    public CarServiceImpl(CarRepository carRepository, CarOwnerRepository carOwnerRepository, UserRepository userRepository, BookingRepository bookingRepository, FeedBackRepository feedBackRepository, CarImageRepository carImageRepository, JwtTokenProvider jwtTokenProvider, CarMapper carMapper, FileStoreService fileStoreService) {
         this.carRepository = carRepository;
         this.carOwnerRepository = carOwnerRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.feedBackRepository = feedBackRepository;
-        this.carImageRepository= carImageRepository;
+        this.carImageRepository = carImageRepository;
         this.jwtTokenProvider = jwtTokenProvider;
         this.carMapper = carMapper;
         this.fileStoreService = fileStoreService;
@@ -65,19 +57,19 @@ public class CarServiceImpl implements CarService {
      */
     @Override
     public CarResponseDTO creareNewCar(CarRequestDTO carRequestDTO, HttpServletRequest request) {
-          String token = getTokenFromRequest(request);
-          int carOwnerId = jwtTokenProvider.getUserIdFromToken(token);
+        String token = getTokenFromRequest(request);
+        int carOwnerId = jwtTokenProvider.getUserIdFromToken(token);
 
-          Carowner carowner = carOwnerRepository.findById(carOwnerId).orElseThrow(() -> new RuntimeException("Car owner not found"));
+        Carowner carowner = carOwnerRepository.findById(carOwnerId).orElseThrow(() -> new RuntimeException("Car owner not found"));
 
-          Car newCar = carMapper.fromDTO(carRequestDTO, carowner);
+        Car newCar = carMapper.fromDTO(carRequestDTO, carowner);
         if (carRequestDTO.getFrontImage() != null && !carRequestDTO.getFrontImage().isEmpty()) {
             String frontImageUrl = fileStoreService.saveFile(carRequestDTO.getFrontImage(), "uploads", "frontImage");
             carRequestDTO.setFrontImageUrl(frontImageUrl);
         }
 
         if (carRequestDTO.getBackImage() != null && !carRequestDTO.getBackImage().isEmpty()) {
-            String backImageUrl =fileStoreService.saveFile(carRequestDTO.getBackImage(), "uploads", "backImage");
+            String backImageUrl = fileStoreService.saveFile(carRequestDTO.getBackImage(), "uploads", "backImage");
             carRequestDTO.setBackImageUrl(backImageUrl);
         }
 
@@ -110,14 +102,9 @@ public class CarServiceImpl implements CarService {
     }
 
 
-
-
-
-
-
-
     /**
      * Get Car By ID
+     *
      * @param id
      * @return
      */
@@ -125,12 +112,13 @@ public class CarServiceImpl implements CarService {
     public CarDetailResponseDTO getCarById(int id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car Not Found"));
         CarDetailResponseDTO carDetailResponseDTO = carMapper.toDetailDTO(car);
-        return carDetailResponseDTO ;
+        return carDetailResponseDTO;
     }
 
 
     /**
      * Get List Car of Owner
+     *
      * @param request
      * @return
      */
@@ -149,34 +137,44 @@ public class CarServiceImpl implements CarService {
 
     /**
      * Search Available Car
+     *
      * @param location
      * @param startDateTime
      * @param endDateTime
      * @return
      */
     @Override
-    public List<CarResponseDTO> searchCar(String location, Instant startDateTime, Instant endDateTime) {
-        List<Car> listAvailableCar = carRepository.searchAvailableCars(location,startDateTime,endDateTime);
+    public ListResultResponseDTO<CarResponseDTO> searchCar(String location, Instant startDateTime, Instant endDateTime) {
+        List<Car> listAvailableCar = carRepository.searchAvailableCars(location, startDateTime, endDateTime);
+        if (listAvailableCar.isEmpty()) {
+            return new ListResultResponseDTO("No result", Collections.emptyList());
+        }
         List<CarResponseDTO> carResponseDTOList = new ArrayList<>();
         for (Car car : listAvailableCar) {
             CarResponseDTO carResponseDTO = carMapper.toDTO(car);
             carResponseDTOList.add(carResponseDTO);
         }
-        return carResponseDTOList;
+        return new ListResultResponseDTO<>("There are " + listAvailableCar.size() + " cars that are available fro you!", carResponseDTOList);
     }
 
+    /**
+     * Update Car
+     *
+     * @param carRequestDTO
+     * @param carId
+     * @param request
+     * @return
+     */
     @Transactional
     public CarDetailResponseDTO updateCarDetails(CarRequestDTO carRequestDTO, Integer carId, HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int carOwnerId = jwtTokenProvider.getUserIdFromToken(token);
 
 
-        Carowner currentCarOwner = carOwnerRepository.findById(carOwnerId)
-                .orElseThrow(() -> new RuntimeException("Car owner not found"));
+        Carowner currentCarOwner = carOwnerRepository.findById(carOwnerId).orElseThrow(() -> new RuntimeException("Car owner not found"));
 
 
-        Car car = carRepository.findById(carId)
-                .orElseThrow(() -> new RuntimeException("Car with id " + carId + " not found"));
+        Car car = carRepository.findById(carId).orElseThrow(() -> new RuntimeException("Car with id " + carId + " not found"));
 
 
         if (!car.getCarOwner().getId().equals(currentCarOwner.getId())) {
@@ -200,11 +198,7 @@ public class CarServiceImpl implements CarService {
         car.setDeposit(carRequestDTO.getDeposit());
         car.setTermsOfUse(carRequestDTO.getTermsOfUse());
 
-        String fullAddress = String.join(" - ",
-                carRequestDTO.getHouseNumberOrStreet(),
-                carRequestDTO.getWard(),
-                carRequestDTO.getDistrict(),
-                carRequestDTO.getCityOrProvince());
+        String fullAddress = String.join(" - ", carRequestDTO.getHouseNumberOrStreet(), carRequestDTO.getWard(), carRequestDTO.getDistrict(), carRequestDTO.getCityOrProvince());
         car.setAddress(fullAddress);
         car.setStatus(carRequestDTO.getStatus());
 
@@ -243,73 +237,20 @@ public class CarServiceImpl implements CarService {
         }
 
         Car updatedCar = carRepository.save(car);
+        log.debug("Updated car: " + updatedCar);
         return carMapper.toDetailDTO(updatedCar);
     }
 
 
-
-
-
-    /**
-     * Method to get rating of car
-     *
-     * @param carId
-     * @return
-     */
-    public Integer findRatingOfCar(Integer carId) {
-        List<Booking> listBooking = bookingRepository.findByCarId(carId);
-        int sumRating = 0;
-        int totalFeedbackCount = 0;
-
-        for (Booking booking : listBooking) {
-            List<Feedback> feedbacks = feedBackRepository.findByBookingId(booking.getId());
-
-            for (Feedback feedback : feedbacks) {
-                System.out.println("Rating: " + feedback.getRatings());
-                sumRating += feedback.getRatings();
-                totalFeedbackCount++;
-            }
-        }
-
-        if (totalFeedbackCount == 0) {
-            return 0;
-        }
-
-        return sumRating / totalFeedbackCount;
-    }
-
-
-    /**
-     * Kiem ta xem xe da duoc muon hay chua
-     *
-     * @param carId
-     * @return
-     */
-    public String addStatus(Integer carId, LocalDateTime pickupDateTime, LocalDateTime dropOffDateTime) {
-      String status = "Available";
-
-      if(pickupDateTime != null && dropOffDateTime != null) {
-         List<Booking> listBooking = bookingRepository.findByCarId(carId);
-         for (Booking booking : listBooking) {
-             LocalDateTime bookingStart = LocalDateTime.ofInstant(booking.getStartDateTime(), ZoneId.systemDefault());
-             LocalDateTime bookingEnd = LocalDateTime.ofInstant(booking.getEndDateTime(), ZoneId.systemDefault());
-             if(!(pickupDateTime.isBefore(bookingStart) && dropOffDateTime.isAfter(bookingEnd)) ) {
-             status = "Not Available";
-             break;
-             }
-         }
-      }
-        return status;
-    }
-
     /**
      * Get Token from request
+     *
      * @param request
      * @return
      */
     private String getTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if(token != null && token.startsWith("Bearer ")) {
+        if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
 
         }

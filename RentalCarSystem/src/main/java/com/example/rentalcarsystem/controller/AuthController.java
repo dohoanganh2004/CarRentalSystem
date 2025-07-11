@@ -28,24 +28,22 @@ public class AuthController {
     private RefreshTokenRepository refreshTokenRepository;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login (@RequestBody @Valid AuthRequestDTO authRequestDTO) {
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid AuthRequestDTO authRequestDTO) {
         return new ResponseEntity<>(userService.authenticate(authRequestDTO), HttpStatus.OK);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponseDTO> register (@RequestBody @Valid RegisterRequestDTO registerRequestDTO) {
+    public ResponseEntity<RegisterResponseDTO> register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO) {
         //log.info("Controller da duoc goi den");
         return new ResponseEntity<>(userService.register(registerRequestDTO), HttpStatus.OK);
     }
 
     @PostMapping("/logout")
-     public ResponseEntity<LogoutResponseDTO> logout (@RequestBody LogoutRequestDTO logoutRequestDTO) {
+    public ResponseEntity<LogoutResponseDTO> logout(@RequestBody LogoutRequestDTO logoutRequestDTO) {
         System.out.println(logoutRequestDTO.getToken());
         LogoutResponseDTO logoutResponseDTO = refreshTokenService.logout(logoutRequestDTO.getToken());
         return new ResponseEntity<>(logoutResponseDTO, HttpStatus.OK);
-     }
-
-
+    }
 
 
 }

@@ -1,6 +1,7 @@
 package com.example.rentalcarsystem.controller;
 
 import com.example.rentalcarsystem.dto.request.car.CarRequestDTO;
+import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 import com.example.rentalcarsystem.model.Car;
 import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
@@ -16,29 +17,30 @@ import java.util.List;
 @RestController
 @RequestMapping("/car-owner")
 public class CarOwnerController {
-private final CarServiceImpl carService;
-private final JwtTokenProvider jwtTokenProvider;
+    private final CarServiceImpl carService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-public CarOwnerController(CarServiceImpl carService, JwtTokenProvider jwtTokenProvider) {
-    this.carService = carService;
-    this.jwtTokenProvider = jwtTokenProvider;
-}
+    public CarOwnerController(CarServiceImpl carService, JwtTokenProvider jwtTokenProvider) {
+        this.carService = carService;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     /**
      * Add car for rental
+     *
      * @param carRequestDTO
      * @return
      */
     @PostMapping("/add-car")
-    public ResponseEntity<CarResponseDTO> creareNewCar (@RequestBody CarRequestDTO carRequestDTO, HttpServletRequest request) {
-        CarResponseDTO car = carService.creareNewCar(carRequestDTO,request);
+    public ResponseEntity<CarResponseDTO> creareNewCar(@RequestBody CarRequestDTO carRequestDTO, HttpServletRequest request) {
+        CarResponseDTO car = carService.creareNewCar(carRequestDTO, request);
         return ResponseEntity.ok(car);
     }
 
 
-
     /**
      * Owner can view their car
+     *
      * @param request
      * @return
      */
@@ -50,16 +52,17 @@ public CarOwnerController(CarServiceImpl carService, JwtTokenProvider jwtTokenPr
 
     /**
      * Update Car by owner
+     *
      * @param carRequestDTO
      * @param carId
      * @return
      */
     @PutMapping("/my-car/update-details-car/{carId}")
-    public ResponseEntity<CarResponseDTO> updateCarDetails(@RequestBody CarRequestDTO carRequestDTO,
-                                                           @PathVariable Integer carId,
-                                                           HttpServletRequest request) {
-        carService.updateCarDetails(carRequestDTO,carId,request);
-        return ResponseEntity.ok(new CarResponseDTO());
+    public ResponseEntity<CarDetailResponseDTO> updateCarDetails(@RequestBody CarRequestDTO carRequestDTO,
+                                                                 @PathVariable Integer carId,
+                                                                 HttpServletRequest request) {
+        CarDetailResponseDTO updateCar = carService.updateCarDetails(carRequestDTO, carId, request);
+        return ResponseEntity.ok(updateCar);
     }
 
 }

@@ -13,7 +13,7 @@ public class RentalCarSystemApplication {
         ApplicationContext context = SpringApplication.run(RentalCarSystemApplication.class, args);
         CarServiceImpl carService = context.getBean(CarServiceImpl.class);
 
-        System.out.println(carService.findRatingOfCar(1));
+
 
 
     }

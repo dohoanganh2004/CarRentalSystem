@@ -11,8 +11,6 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
 
-
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role.id", source = "roleId")
     User toUser(RegisterRequestDTO dto);
@@ -22,10 +20,9 @@ public interface UserMapper {
 //    @Mapping(source = "phoneNo", target = "phoneNo")
     RegisterResponseDTO toRegisterResponseDTO(User user);
 
-    @Mapping(source = "phoneNo",target = "phoneNumber")
-    @Mapping(source = "email",target = "emailAddress")
-    @Mapping(source = "dateOfBirth",target = "birthDate")
-
+    @Mapping(source = "phoneNo", target = "phoneNumber")
+    @Mapping(source = "email", target = "emailAddress")
+    @Mapping(source = "dateOfBirth", target = "birthDate")
     ProfileResponseDTO toProfileResponseDTO(User user);
 
 

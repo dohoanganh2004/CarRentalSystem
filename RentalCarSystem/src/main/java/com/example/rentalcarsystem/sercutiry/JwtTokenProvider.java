@@ -20,14 +20,14 @@ import java.util.Map;
 public class JwtTokenProvider {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
-    private final String SECRET_KEY = "C52M+JIYpsiAf4g2Azja5qEDv0KocDa5FAJsS01jxufIbCmbExhCHis/GDy/mSOnZBdl7mxcPOO4fzRNRY+KdA==";
+    @Autowired
+    private JwtProperties jwtProperties;
 
 
-    private final long JWT_EXPIRATION = 604800000L;
 
 
     private Key getSigningKey() {
-        byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8);
         String base64Key = Base64.getEncoder().encodeToString(keyBytes);
         log.info(">>> JWT Signing Key (Base64): {}", base64Key);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -35,27 +35,28 @@ public class JwtTokenProvider {
 
     /**
      * Create token
+     *
      * @param userDetails
      * @return
      */
 
     public String generateToken(CustomUserDetails userDetails) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
-         Map<String, String> claims = new HashMap<>();
-         claims.put("role",userDetails.getUser().getRole().getId().toString());
+        Date expiryDate = new Date(now.getTime() + jwtProperties.getExpiration());
+        Map<String, String> claims = new HashMap<>();
+        claims.put("role", userDetails.getUser().getRole().getId().toString());
+        claims.put("role-name", userDetails.getUser().getRole().getRoleName());
+        claims.put("email", userDetails.getUser().getEmail());
+        claims.put("fullName", userDetails.getUser().getFullName());
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .setSubject(Integer.toString(userDetails.getUser().getId()))
 
-         claims.put("email",userDetails.getUser().getEmail());
-         claims.put("fullName",userDetails.getUser().getFullName());
-         String token = Jwts.builder()
-                 .setClaims(claims)
-                 .setSubject(Integer.toString(userDetails.getUser().getId()))
-
-                 .setIssuedAt(now)
-                 .setExpiration(expiryDate)
-                 .signWith(getSigningKey(),SignatureAlgorithm.HS512)
-                 .compact();
-         log.info(">>> JWT Token (Base64): {}", token);
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+        log.info(">>> JWT Token (Base64): {}", token);
         Refreshtoken refreshToken = new Refreshtoken();
         refreshToken.setUser(userDetails.getUser());
         refreshToken.setToken(token);
@@ -67,6 +68,7 @@ public class JwtTokenProvider {
 
     /**
      * Get user ID from token
+     *
      * @param token
      * @return
      */
@@ -81,6 +83,7 @@ public class JwtTokenProvider {
 
     /**
      * Get email from token
+     *
      * @param token
      * @return
      */
@@ -95,6 +98,7 @@ public class JwtTokenProvider {
 
     /**
      * Get role from token
+     *
      * @param token
      * @return
      */
@@ -104,11 +108,12 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        return String.valueOf(claims.get("role-name"));
     }
 
     /**
      * Get fullname from Token
+     *
      * @param token
      * @return
      */
@@ -123,6 +128,7 @@ public class JwtTokenProvider {
 
     /**
      * Validate token
+     *
      * @param token
      * @return
      */

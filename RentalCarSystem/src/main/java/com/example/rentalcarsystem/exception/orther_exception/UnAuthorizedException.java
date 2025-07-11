@@ -1,4 +1,4 @@
-package com.example.rentalcarsystem.exception;
+package com.example.rentalcarsystem.exception.orther_exception;
 
 public class UnAuthorizedException extends RuntimeException {
 public UnAuthorizedException() {

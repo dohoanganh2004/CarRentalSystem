@@ -22,7 +22,7 @@ public class SpringSecurityConfig {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public AuthenticationManager getAuthenticationManager(AuthenticationConfiguration authenticationConfiguration)  throws Exception{
+    public AuthenticationManager getAuthenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
 
     }
@@ -37,7 +37,10 @@ public class SpringSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/customer/**").hasAuthority("ROLE_CUSTOMER")
+                        .requestMatchers("/car-owner/**").hasAuthority("ROLE_CAROWNER")
                         .anyRequest().authenticated())
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 

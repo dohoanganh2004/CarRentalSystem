@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 public class CarDetailResponseDTO implements Serializable {
 
 
-
     private String licensePlate;
 
     private String color;

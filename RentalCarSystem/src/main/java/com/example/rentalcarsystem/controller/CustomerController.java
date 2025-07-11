@@ -3,6 +3,7 @@ package com.example.rentalcarsystem.controller;
 import com.example.rentalcarsystem.dto.request.car.CarRequestDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
+import com.example.rentalcarsystem.dto.response.other.ListResultResponseDTO;
 import com.example.rentalcarsystem.service.car.CarServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,25 +23,27 @@ public class CustomerController {
     public CustomerController(CarServiceImpl carService) {
         this.carService = carService;
     }
-@GetMapping("/search-car")
-public ResponseEntity<List<CarResponseDTO>> searchAvailableCar(@RequestParam String location,
-                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
-                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime) {
-    Instant start = startDateTime.atZone(ZoneId.systemDefault()).toInstant();
-    Instant end = endDateTime.atZone(ZoneId.systemDefault()).toInstant();
-    List<CarResponseDTO> listAvailableCar = carService.searchCar(location,start,end);
-    return ResponseEntity.ok(listAvailableCar);
 
-}
+    @GetMapping("/search-car")
+    public ResponseEntity<ListResultResponseDTO<CarResponseDTO>> searchAvailableCar(@RequestParam String location,
+                                                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
+                                                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime) {
+        Instant start = startDateTime.atZone(ZoneId.systemDefault()).toInstant();
+        Instant end = endDateTime.atZone(ZoneId.systemDefault()).toInstant();
+        ListResultResponseDTO<CarResponseDTO> listAvailableCar = carService.searchCar(location, start, end);
+        return ResponseEntity.ok(listAvailableCar);
+
+    }
 
     /**
      * View Detail Of Car With ID
+     *
      * @param id
      * @return
      */
     @GetMapping("/car-details/{id}")
     public ResponseEntity<CarDetailResponseDTO> viewCarDetail(@PathVariable int id) {
         CarDetailResponseDTO carDetail = carService.getCarById(id);
-       return ResponseEntity.ok(carDetail);
+        return ResponseEntity.ok(carDetail);
     }
 }

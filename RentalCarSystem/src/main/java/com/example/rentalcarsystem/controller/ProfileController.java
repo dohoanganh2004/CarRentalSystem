@@ -23,8 +23,8 @@ public class ProfileController {
     private JwtTokenProvider jwtTokenProvider;
 
     @PutMapping("/change-profile")
-    public ResponseEntity<ProfileResponseDTO> profile (@RequestBody @Valid ProfileRequestDTO profileRequestDTO ,
-                                                       HttpServletRequest request) {
+    public ResponseEntity<ProfileResponseDTO> profile(@RequestBody @Valid ProfileRequestDTO profileRequestDTO,
+                                                      HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int userId = jwtTokenProvider.getUserIdFromToken(token);
 
@@ -33,8 +33,8 @@ public class ProfileController {
 
 
     @PatchMapping("/change-password")
-    public ResponseEntity<PasswordResponseDTO> changePassword (@RequestBody @Valid PasswordRequestDTO passwordRequestDTO,
-                                                               HttpServletRequest request) {
+    public ResponseEntity<PasswordResponseDTO> changePassword(@RequestBody @Valid PasswordRequestDTO passwordRequestDTO,
+                                                              HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int userId = jwtTokenProvider.getUserIdFromToken(token);
         System.out.println(userId);
@@ -42,15 +42,15 @@ public class ProfileController {
     }
 
 
-
     /**
      * Get token from request
+     *
      * @param request
      * @return
      */
     private String getTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if(token != null && token.startsWith("Bearer ")) {
+        if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
 
         }

@@ -1,6 +1,6 @@
 package com.example.rentalcarsystem.sercutiry;
 
-import com.example.rentalcarsystem.exception.UnAuthorizedException;
+import com.example.rentalcarsystem.exception.orther_exception.UnAuthorizedException;
 import com.example.rentalcarsystem.model.User;
 import com.example.rentalcarsystem.repository.RefreshTokenRepository;
 import com.example.rentalcarsystem.repository.UserRepository;
@@ -18,14 +18,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
 @Component
 @AllArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-   private  final JwtTokenProvider jwtTokenProvider;
-   private final CustomUserDetailsService userDetailsService;
-   private final RefreshTokenRepository refreshTokenRepository;
-   private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CustomUserDetailsService userDetailsService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getTokenFromRequest(request);
@@ -59,12 +61,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Get token from request
+     *
      * @param request
      * @return
      */
     private String getTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if(token != null && token.startsWith("Bearer ")) {
+        if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
 
         }

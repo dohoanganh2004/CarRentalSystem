@@ -3,18 +3,28 @@ package com.example.rentalcarsystem.mapper;
 import com.example.rentalcarsystem.dto.request.car.CarRequestDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
-import com.example.rentalcarsystem.model.Car;
-import com.example.rentalcarsystem.model.Carimage;
-import com.example.rentalcarsystem.model.Carowner;
+import com.example.rentalcarsystem.model.*;
+import com.example.rentalcarsystem.repository.BookingRepository;
+import com.example.rentalcarsystem.repository.FeedBackRepository;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class CarMapper {
+    private final BookingRepository bookingRepository;
+    private final FeedBackRepository feedBackRepository;
 
+    public CarMapper(BookingRepository bookingRepository, FeedBackRepository feedBackRepository) {
+        this.bookingRepository = bookingRepository;
+        this.feedBackRepository = feedBackRepository;
+    }
 
-    public static CarResponseDTO toDTO(Car car) {
+    public CarResponseDTO toDTO(Car car) {
+        Integer carRating = findRatingOfCar(car.getId());
         CarResponseDTO dto = new CarResponseDTO();
         dto.setName(car.getName());
+        dto.setRating(carRating);
         dto.setPrice(car.getBasePrice());
         dto.setStatus(car.getStatus());
         if (car.getCarImage() != null) {
@@ -30,7 +40,7 @@ public class CarMapper {
         return dto;
     }
 
-    public static CarDetailResponseDTO toDetailDTO(Car car) {
+    public CarDetailResponseDTO toDetailDTO(Car car) {
         CarDetailResponseDTO dto = new CarDetailResponseDTO();
         dto.setLicensePlate(car.getLicensePlate());
         dto.setColor(car.getColor());
@@ -60,7 +70,7 @@ public class CarMapper {
         return dto;
     }
 
-    public static Car fromDTO(CarRequestDTO dto, Carowner owner) {
+    public Car fromDTO(CarRequestDTO dto, Carowner owner) {
         Car car = new Car();
         car.setCarOwner(owner);
         car.setLicensePlate(dto.getLicensePlate());
@@ -97,8 +107,37 @@ public class CarMapper {
         image.setRightImageUrl(dto.getRightImageUrl());
         image.setCar(car);
         car.setCarImage(image);
-        String  carName = dto.getBrandName().concat(" ").concat(dto.getModel().concat(" ").concat(dto.getProductionYear().toString()));
+        String carName = dto.getBrandName().concat(" ").concat(dto.getModel().concat(" ").concat(dto.getProductionYear().toString()));
         car.setName(carName);
         return car;
     }
+
+    /**
+     * Method to get rating of car
+     *
+     * @param carId
+     * @return
+     */
+    public Integer findRatingOfCar(Integer carId) {
+        List<Booking> listBooking = bookingRepository.findByCarId(carId);
+        int sumRating = 0;
+        int totalFeedbackCount = 0;
+
+        for (Booking booking : listBooking) {
+            List<Feedback> feedbacks = feedBackRepository.findByBookingId(booking.getId());
+
+            for (Feedback feedback : feedbacks) {
+                System.out.println("Rating: " + feedback.getRatings());
+                sumRating += feedback.getRatings();
+                totalFeedbackCount++;
+            }
+        }
+
+        if (totalFeedbackCount == 0) {
+            return 0;
+        }
+
+        return sumRating / totalFeedbackCount;
+    }
+
 }
