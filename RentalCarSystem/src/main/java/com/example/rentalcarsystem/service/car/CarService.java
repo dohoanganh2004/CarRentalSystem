@@ -4,22 +4,16 @@ import com.example.rentalcarsystem.dto.request.car.CarRequestDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 import com.example.rentalcarsystem.model.Car;
-import org.springframework.data.domain.Page;
+import jakarta.servlet.http.HttpServletRequest;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public interface CarService {
-Car creareNewCar (CarRequestDTO carRequestDTO, Integer carOwnerId);
-List<Car> getAllCars();
+CarResponseDTO creareNewCar (CarRequestDTO carRequestDTO, HttpServletRequest request);
+
 CarDetailResponseDTO getCarById(int id);
-List<CarResponseDTO> getCarByOwnerId(int id);
-//Page<CarResponseDTO> getAvailableCars(String location,
-//                                      LocalDateTime pickupDateTime,
-//                                      LocalDateTime dropOffDateTime,
-//                                      Integer page,
-//                                      Integer size,
-//                                      String sortBy,
-//                                      String order);
-    CarDetailResponseDTO updateCarDetails(CarRequestDTO carRequestDTO,Integer carId);
+List<CarResponseDTO> getOwnerCar(HttpServletRequest request);
+List<CarResponseDTO> searchCar(String location, Instant startDateTime, Instant endDateTime);
+    CarDetailResponseDTO updateCarDetails(CarRequestDTO carRequestDTO,Integer carId,HttpServletRequest request);
 }

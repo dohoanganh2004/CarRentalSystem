@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 public class Car {
     @Id
     @Column(name = "CarID", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)

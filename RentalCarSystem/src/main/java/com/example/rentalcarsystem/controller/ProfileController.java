@@ -22,7 +22,7 @@ public class ProfileController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    @PutMapping("/changeProfile")
+    @PutMapping("/change-profile")
     public ResponseEntity<ProfileResponseDTO> profile (@RequestBody @Valid ProfileRequestDTO profileRequestDTO ,
                                                        HttpServletRequest request) {
         String token = getTokenFromRequest(request);
@@ -32,7 +32,7 @@ public class ProfileController {
     }
 
 
-    @PatchMapping("/changePassword")
+    @PatchMapping("/change-password")
     public ResponseEntity<PasswordResponseDTO> changePassword (@RequestBody @Valid PasswordRequestDTO passwordRequestDTO,
                                                                HttpServletRequest request) {
         String token = getTokenFromRequest(request);

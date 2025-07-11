@@ -5,13 +5,14 @@ import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 import com.example.rentalcarsystem.service.car.CarServiceImpl;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
 
 @RestController
 @RequestMapping("/customer")
@@ -21,29 +22,16 @@ public class CustomerController {
     public CustomerController(CarServiceImpl carService) {
         this.carService = carService;
     }
+@GetMapping("/search-car")
+public ResponseEntity<List<CarResponseDTO>> searchAvailableCar(@RequestParam String location,
+                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
+                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime) {
+    Instant start = startDateTime.atZone(ZoneId.systemDefault()).toInstant();
+    Instant end = endDateTime.atZone(ZoneId.systemDefault()).toInstant();
+    List<CarResponseDTO> listAvailableCar = carService.searchCar(location,start,end);
+    return ResponseEntity.ok(listAvailableCar);
 
-//    /**
-//     * Search a car from customer
-//     * @param location
-//     * @param pickupDateTime
-//     * @param dropOffDateTime
-//     * @param page
-//     * @param size
-//     * @param sortBy
-//     * @param order
-//     * @return
-//     */
-//    @GetMapping("/search-car")
-//    public Page<CarResponseDTO> searchCars(String location
-//            , LocalDateTime pickupDateTime
-//            , LocalDateTime dropOffDateTime
-//            , Integer page
-//            , Integer size
-//            , String sortBy, String order) {
-//        Page<CarResponseDTO> availableCars = carService.getAvailableCars(location, pickupDateTime, dropOffDateTime, page, size, sortBy, order);
-//        return availableCars;
-//
-//    }
+}
 
     /**
      * View Detail Of Car With ID

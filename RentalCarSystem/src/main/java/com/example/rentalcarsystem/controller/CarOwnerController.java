@@ -31,11 +31,10 @@ public CarOwnerController(CarServiceImpl carService, JwtTokenProvider jwtTokenPr
      */
     @PostMapping("/add-car")
     public ResponseEntity<CarResponseDTO> creareNewCar (@RequestBody CarRequestDTO carRequestDTO, HttpServletRequest request) {
-        String token = getTokenFromRequest(request);
-        int userId = jwtTokenProvider.getUserIdFromToken(token);
-        Car car = carService.creareNewCar(carRequestDTO,userId);
-        return ResponseEntity.ok(new CarResponseDTO());
+        CarResponseDTO car = carService.creareNewCar(carRequestDTO,request);
+        return ResponseEntity.ok(car);
     }
+
 
 
     /**
@@ -45,10 +44,9 @@ public CarOwnerController(CarServiceImpl carService, JwtTokenProvider jwtTokenPr
      */
     @GetMapping("/my-car")
     public List<CarResponseDTO> getCarByOwnerId(HttpServletRequest request) {
-        String token = getTokenFromRequest(request);
-        int ownerId = jwtTokenProvider.getUserIdFromToken(token);
-        return carService.getCarByOwnerId(ownerId);
+        return carService.getOwnerCar(request);
     }
+
 
     /**
      * Update Car by owner
@@ -57,21 +55,11 @@ public CarOwnerController(CarServiceImpl carService, JwtTokenProvider jwtTokenPr
      * @return
      */
     @PutMapping("/my-car/update-details-car/{carId}")
-    public ResponseEntity<CarResponseDTO> updateCarDetails(@RequestBody CarRequestDTO carRequestDTO, @PathVariable Integer carId) {
-        carService.updateCarDetails(carRequestDTO,carId);
+    public ResponseEntity<CarResponseDTO> updateCarDetails(@RequestBody CarRequestDTO carRequestDTO,
+                                                           @PathVariable Integer carId,
+                                                           HttpServletRequest request) {
+        carService.updateCarDetails(carRequestDTO,carId,request);
         return ResponseEntity.ok(new CarResponseDTO());
     }
-    /**
-     * Get Token from request
-     * @param request
-     * @return
-     */
-    private String getTokenFromRequest(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if(token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
 
-        }
-        return token;
-    }
 }

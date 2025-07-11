@@ -13,6 +13,7 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Carowner {
     @Id
     @Column(name = "CarOwnerID", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @MapsId
