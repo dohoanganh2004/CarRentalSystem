@@ -3,6 +3,7 @@ package com.example.rentalcarsystem.service.feedback;
 import com.example.rentalcarsystem.dto.request.feedback.FeedBackRequestDTO;
 import com.example.rentalcarsystem.dto.response.feedback.FeedBackReportDTO;
 import com.example.rentalcarsystem.dto.response.feedback.FeedBackResponseDTO;
+import com.example.rentalcarsystem.dto.response.feedback.PublicCarFeedBackDTO;
 import com.example.rentalcarsystem.model.Booking;
 import com.example.rentalcarsystem.model.Feedback;
 import com.example.rentalcarsystem.repository.BookingRepository;
@@ -11,7 +12,6 @@ import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,6 +44,11 @@ public class FeedBackServiceImpl implements FeedBackService {
         return new FeedBackResponseDTO("Thank you for your feedback!");
     }
 
+    /**
+     * Get All Feed Back By CarOwner
+     * @param request
+     * @return
+     */
     @Override
     public List<FeedBackReportDTO> getFeedBackReportByCaOwnerId(HttpServletRequest request) {
         String token = getTokenFromRequest(request);
@@ -52,6 +57,17 @@ public class FeedBackServiceImpl implements FeedBackService {
         return feedBackReportList;
     }
 
+    /**
+     * Get All FeedBack By CarID
+     * @param carId
+     * @return
+     */
+    @Override
+    public List<PublicCarFeedBackDTO> getFeedBackByCarId(Integer carId) {
+        List<PublicCarFeedBackDTO>  listPublicFeedBack =  feedBackRepository.findPublicFeedBackByCarId(carId);
+
+        return listPublicFeedBack;
+    }
 
 
     /**

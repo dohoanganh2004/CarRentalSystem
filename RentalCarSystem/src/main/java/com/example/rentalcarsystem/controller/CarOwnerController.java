@@ -67,6 +67,18 @@ public class CarOwnerController {
     }
 
     /**
+     * Stop reting the car
+     * @param carId
+     * @param carRequestDTO
+     * @return
+     */
+    @PutMapping("/my-car/stop-reting/{carId}")
+    public ResponseEntity<CarResponseDTO> stopRentalCar(@PathVariable int carId, @RequestBody CarRequestDTO carRequestDTO) {
+        return ResponseEntity.ok(carService.stopRentalCar(carId, carRequestDTO));
+    }
+
+
+    /**
      * Get All Feed Back Of Car Owner
      *
      * @param request

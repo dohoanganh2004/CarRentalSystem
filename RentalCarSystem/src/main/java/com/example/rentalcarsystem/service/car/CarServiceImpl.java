@@ -245,6 +245,25 @@ public class CarServiceImpl implements CarService {
         return carMapper.toDetailDTO(updatedCar);
     }
 
+    /**
+     * Stop Renting Car
+     * @param carId
+     * @return
+     */
+    @Override
+    public CarResponseDTO stopRentalCar(int carId,CarRequestDTO requestDTO) {
+
+        Car car = carRepository.findById(carId).orElseThrow(()->new RuntimeException("Car not found"));
+        if(car.getStatus().equals("Booked")){
+            throw new RuntimeException("Do not allow to stop renting the car");
+        }
+        if(!car.getStatus().equals("Booked")){
+          car.setStatus(requestDTO.getStatus());
+        }
+        carRepository.save(car);
+        return carMapper.toDTO(car);
+    }
+
 
     /**
      * Get Token from request

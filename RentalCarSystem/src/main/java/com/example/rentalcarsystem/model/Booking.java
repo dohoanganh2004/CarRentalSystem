@@ -31,10 +31,6 @@ public class Booking {
     @Column(name = "EndDateTime")
     private Instant endDateTime;
 
-    @Lob
-    @Column(name = "DriversInformation")
-    private String driversInformation;
-
     @Size(max = 50)
     @Column(name = "PaymentMethod", length = 50)
     private String paymentMethod;

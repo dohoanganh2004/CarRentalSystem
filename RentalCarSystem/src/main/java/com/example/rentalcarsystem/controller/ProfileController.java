@@ -27,17 +27,17 @@ public class ProfileController {
                                                       HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int userId = jwtTokenProvider.getUserIdFromToken(token);
-
+        System.out.println("user id test:" + userId);
         return new ResponseEntity<>(userService.profile(profileRequestDTO, userId), HttpStatus.OK);
     }
 
 
-    @PatchMapping("/change-password")
+    @PutMapping ("/change-password")
     public ResponseEntity<PasswordResponseDTO> changePassword(@RequestBody @Valid PasswordRequestDTO passwordRequestDTO,
                                                               HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int userId = jwtTokenProvider.getUserIdFromToken(token);
-        System.out.println(userId);
+
         return new ResponseEntity<>(userService.password(passwordRequestDTO, userId), HttpStatus.OK);
     }
 

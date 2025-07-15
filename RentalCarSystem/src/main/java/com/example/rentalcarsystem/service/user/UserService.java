@@ -8,10 +8,13 @@ import com.example.rentalcarsystem.dto.response.user.AuthResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.PasswordResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.ProfileResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.RegisterResponseDTO;
+import com.example.rentalcarsystem.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserService {
     AuthResponseDTO authenticate(AuthRequestDTO authRequestDTO);
     RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO);
      ProfileResponseDTO profile(ProfileRequestDTO profileRequestDTO ,Integer id);
      PasswordResponseDTO password(PasswordRequestDTO passwordRequestDTO , Integer id);
+
 }

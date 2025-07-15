@@ -17,6 +17,7 @@ import com.example.rentalcarsystem.repository.UserRepository;
 import com.example.rentalcarsystem.sercutiry.CustomUserDetails;
 
 import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 @AllArgsConstructor
@@ -184,5 +187,26 @@ public class UserServiceImpl implements UserService {
         return new PasswordResponseDTO("Password change sucessful");
     }
 
+//    @Override
+//    public User myWallet(HttpServletRequest request) {
+//        String token = getTokenFromRequest(request);
+//        int userId = jwtTokenProvider.getUserIdFromToken(token);
+//        BigDecimal myWallet = userRepository.
+//        return null;
+//    }
+
+    /**
+     *
+     * @param request
+     * @return
+     */
+    private String getTokenFromRequest(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+
+        }
+        return token;
+    }
 
 }

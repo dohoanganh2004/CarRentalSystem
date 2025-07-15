@@ -1,5 +1,6 @@
 package com.example.rentalcarsystem.mapper;
 
+import com.example.rentalcarsystem.dto.CarInformationDTO;
 import com.example.rentalcarsystem.dto.request.car.CarRequestDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
@@ -8,6 +9,7 @@ import com.example.rentalcarsystem.repository.BookingRepository;
 import com.example.rentalcarsystem.repository.FeedBackRepository;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -70,6 +72,42 @@ public class CarMapper {
         return dto;
     }
 
+    /**
+     *
+     * @param car
+     * @return
+     */
+    public CarInformationDTO toInformationDTO(Car car) {
+        CarInformationDTO dto = new CarInformationDTO();
+        dto.setLicensePlate(car.getLicensePlate());
+        dto.setColor(car.getColor());
+        dto.setBrandName(car.getBrand());
+        dto.setModel(car.getModel());
+        dto.setProductionYear(car.getProductionYears());
+        dto.setNoOfSeats(car.getNumberOfSeats());
+        dto.setTransmission(car.getTransmissionType());
+        dto.setFuel(car.getFuelType());
+        dto.setMileage(car.getMileage());
+        dto.setFuelConsumption(car.getFuelConsumption());
+        dto.setAddress(car.getAddress());
+        dto.setDescription(car.getDescription());
+        dto.setAdditionalFunctions(car.getAdditionalFunctions());
+        dto.setBasePrice(car.getBasePrice());
+        dto.setTermsOfUse(car.getTermsOfUse());
+        dto.setRegistrationPaperUrl(car.getRegistrationPaperUrl());
+        dto.setCertificateOfInspectionUrl(car.getCertificateOfInspectionUrl());
+        dto.setInsuranceUrl(car.getInsuranceUrl());
+
+        return dto;
+    }
+
+
+    /**
+     *
+     * @param dto
+     * @param owner
+     * @return
+     */
     public Car fromDTO(CarRequestDTO dto, Carowner owner) {
         Car car = new Car();
         car.setCarOwner(owner);
@@ -84,7 +122,7 @@ public class CarMapper {
         car.setMileage(dto.getMileage());
         car.setFuelConsumption(dto.getFuelConsumption());
         car.setBasePrice(dto.getBasePrice());
-        car.setDeposit(dto.getDeposit());
+        car.setDeposit(dto.getBasePrice().multiply(new BigDecimal("0.2")) .add( dto.getBasePrice()));
         car.setDescription(dto.getDescription());
         car.setAdditionalFunctions(dto.getAdditionalFunctions());
         car.setTermsOfUse(dto.getTermsOfUse());
