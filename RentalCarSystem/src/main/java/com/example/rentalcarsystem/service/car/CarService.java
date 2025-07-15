@@ -17,5 +17,5 @@ CarDetailResponseDTO getCarById(int id);
 List<CarResponseDTO> getOwnerCar(HttpServletRequest request);
 ListResultResponseDTO<CarResponseDTO> searchCar(String location, Instant startDateTime, Instant endDateTime);
     CarDetailResponseDTO updateCarDetails(CarRequestDTO carRequestDTO,Integer carId,HttpServletRequest request);
-CarResponseDTO stopRentalCar(int carId,CarRequestDTO carRequestDTO);
+CarResponseDTO stopRentalCar(int carId,HttpServletRequest request);
 }

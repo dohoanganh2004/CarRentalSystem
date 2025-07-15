@@ -1,8 +1,9 @@
 package com.example.rentalcarsystem.controller;
 
+import com.example.rentalcarsystem.dto.CarBookingBaseInfoDTO;
 import com.example.rentalcarsystem.dto.CarBookingDetailsDTO;
 import com.example.rentalcarsystem.dto.booking.BookingInformationDTO;
-import com.example.rentalcarsystem.dto.booking.FinishBookingDTO;
+import com.example.rentalcarsystem.dto.booking.BookingResultDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 import com.example.rentalcarsystem.dto.response.feedback.PublicCarFeedBackDTO;
@@ -36,6 +37,7 @@ public class CustomerController {
 
     /**
      * Customer can search car by location, startDateTime , endDateTime
+     *
      * @param location
      * @param startDateTime
      * @param endDateTime
@@ -75,30 +77,72 @@ public class CustomerController {
     }
 
     /**
-     * Booking
+     * Customer can booking the car
+     *
      * @param bookingInformationDTO
      * @return
      */
     @PostMapping("/booking/new-booking")
-    public ResponseEntity<FinishBookingDTO> bookingCar (@RequestBody BookingInformationDTO bookingInformationDTO,
-                                                        HttpServletRequest request) {
-        return ResponseEntity.ok(bookingService.rentalCar(bookingInformationDTO,request));
+    public ResponseEntity<BookingResultDTO> bookingCar(@RequestBody BookingInformationDTO bookingInformationDTO,
+                                                       HttpServletRequest request) {
+        return ResponseEntity.ok(bookingService.rentalCar(bookingInformationDTO, request));
     }
 
     /**
      * Get my booking
+     *
      * @param request
      * @return
      */
     @GetMapping("/booking/my-booking")
     public ResponseEntity<MyRentalResponseDTO> viewMyBookingList(HttpServletRequest request) {
-       MyRentalResponseDTO myRentalResponseDTO = bookingService.listBookings(request);
+        MyRentalResponseDTO myRentalResponseDTO = bookingService.listBookings(request);
         return ResponseEntity.ok(myRentalResponseDTO);
     }
 
-
+    /**
+     * Customer can view booking detail
+     *
+     * @param id
+     * @return
+     */
     @GetMapping("/booking/my-booking/booking-detail/{id}")
     public ResponseEntity<CarBookingDetailsDTO> viewBookingDetails(@PathVariable int id) {
         return ResponseEntity.ok(bookingService.getBookingById(id));
+    }
+
+    /**
+     * Customer can cancel their booking and
+     *
+     * @param bookingId
+     * @param request
+     * @return
+     */
+    @PutMapping("/booking/my-booking/cancel-booking/{bookingId}")
+    public ResponseEntity<CarBookingBaseInfoDTO> cancelBooking(@PathVariable int bookingId, HttpServletRequest request) {
+        return ResponseEntity.ok(bookingService.cancelBooking(bookingId, request));
+    }
+
+    /**
+     * This use case allow customers to confirm picking up a car and change booking status
+     *
+     * @param bookingId
+     * @param request
+     * @return
+     */
+    @PutMapping("/booking/my-booking/pick-up/{bookingId}")
+    public ResponseEntity<CarBookingBaseInfoDTO> pickUpCarBooking(@PathVariable int bookingId, HttpServletRequest request) {
+        return ResponseEntity.ok(bookingService.pickUpBooking(bookingId, request));
+    }
+
+    /**
+     *
+     * @param bookingId
+     * @param request
+     * @return
+     */
+    @PutMapping("/booking/my-booking/return-car/{bookingId}")
+    public ResponseEntity<BookingResultDTO> returnTheCar( @PathVariable Integer bookingId, HttpServletRequest request) {
+        return ResponseEntity.ok(bookingService.returnTheCar(bookingId, request));
     }
 }

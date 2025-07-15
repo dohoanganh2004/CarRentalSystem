@@ -246,23 +246,36 @@ public class CarServiceImpl implements CarService {
     }
 
     /**
-     * Stop Renting Car
+     * Method allows car owner stop renting the car
      * @param carId
+     * @param request
      * @return
      */
     @Override
-    public CarResponseDTO stopRentalCar(int carId,CarRequestDTO requestDTO) {
+    public CarResponseDTO stopRentalCar(int carId, HttpServletRequest request) {
+        String token = getTokenFromRequest(request);
+        int carOwnerId = jwtTokenProvider.getUserIdFromToken(token);
 
-        Car car = carRepository.findById(carId).orElseThrow(()->new RuntimeException("Car not found"));
-        if(car.getStatus().equals("Booked")){
-            throw new RuntimeException("Do not allow to stop renting the car");
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+
+
+        if (car.getCarOwner().getId() != carOwnerId) {
+            throw new RuntimeException("You are not allowed to update this car");
         }
-        if(!car.getStatus().equals("Booked")){
-          car.setStatus(requestDTO.getStatus());
+
+
+        if (car.getStatus().equalsIgnoreCase("Booked")) {
+            throw new RuntimeException("Do not allow to stop a car that is currently booked");
         }
+
+
+        car.setStatus("Stopped");
         carRepository.save(car);
+
         return carMapper.toDTO(car);
     }
+
 
 
     /**

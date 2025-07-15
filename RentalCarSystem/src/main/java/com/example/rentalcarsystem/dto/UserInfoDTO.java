@@ -19,7 +19,7 @@ public class UserInfoDTO implements Serializable {
     String district;
     String ward;
     String houseNumberOrStreet;
-    BigDecimal wallet;
+
 }
 
 

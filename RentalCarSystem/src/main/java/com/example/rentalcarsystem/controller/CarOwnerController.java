@@ -32,7 +32,7 @@ public class CarOwnerController {
      * @param carRequestDTO
      * @return
      */
-    @PostMapping("/add-car")
+    @PostMapping("/car/add-car")
     public ResponseEntity<CarResponseDTO> creareNewCar(@RequestBody CarRequestDTO carRequestDTO, HttpServletRequest request) {
         CarResponseDTO car = carService.creareNewCar(carRequestDTO, request);
         return ResponseEntity.ok(car);
@@ -45,7 +45,7 @@ public class CarOwnerController {
      * @param request
      * @return
      */
-    @GetMapping("/my-car")
+    @GetMapping("/car/my-car")
     public List<CarResponseDTO> getCarByOwnerId(HttpServletRequest request) {
         return carService.getOwnerCar(request);
     }
@@ -55,10 +55,10 @@ public class CarOwnerController {
      * Update Car by owner
      *
      * @param carRequestDTO
-     * @param carId
+     * @param carId id of update Car
      * @return
      */
-    @PutMapping("/my-car/update-details-car/{carId}")
+    @PutMapping("/car/my-car/update-details-car/{carId}")
     public ResponseEntity<CarDetailResponseDTO> updateCarDetails(@RequestBody CarRequestDTO carRequestDTO,
                                                                  @PathVariable Integer carId,
                                                                  HttpServletRequest request) {
@@ -67,14 +67,14 @@ public class CarOwnerController {
     }
 
     /**
-     * Stop reting the car
+     * Method allows car owner can stop renting the car
      * @param carId
-     * @param carRequestDTO
+     * @param request
      * @return
      */
-    @PutMapping("/my-car/stop-reting/{carId}")
-    public ResponseEntity<CarResponseDTO> stopRentalCar(@PathVariable int carId, @RequestBody CarRequestDTO carRequestDTO) {
-        return ResponseEntity.ok(carService.stopRentalCar(carId, carRequestDTO));
+    @PutMapping("/car/my-car/stop-reting/{carId}")
+    public ResponseEntity<CarResponseDTO> stopRentalCar(@PathVariable int carId, HttpServletRequest request) {
+        return ResponseEntity.ok(carService.stopRentalCar(carId, request));
     }
 
 

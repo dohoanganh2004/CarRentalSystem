@@ -8,6 +8,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.time.Instant;
 @Data
+/**
+ * Method to
+ */
 public class BookingInformationDTO implements Serializable {
     private BookingDetailsDTO bookingDetailsDTO;
     private String paymentMethod;
