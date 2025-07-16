@@ -5,6 +5,7 @@ import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 import com.example.rentalcarsystem.dto.response.feedback.FeedBackReportDTO;
 
+import com.example.rentalcarsystem.service.booking.BookingService;
 import com.example.rentalcarsystem.service.car.CarServiceImpl;
 import com.example.rentalcarsystem.service.feedback.FeedBackServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,10 +21,12 @@ public class CarOwnerController {
     private final CarServiceImpl carService;
 
     private final FeedBackServiceImpl feedBackService;
+    private final BookingService bookingService;
 
-    public CarOwnerController(CarServiceImpl carService, FeedBackServiceImpl feedBackService) {
+    public CarOwnerController(CarServiceImpl carService, FeedBackServiceImpl feedBackService, BookingService bookingService) {
         this.carService = carService;
         this.feedBackService = feedBackService;
+        this.bookingService = bookingService;
     }
 
     /**
@@ -90,4 +93,25 @@ public class CarOwnerController {
         return ResponseEntity.ok(listFeedBackReport);
     }
 
+    /**
+     * Confirm deposit
+     * @param request
+     * @param bookingId
+     * @return
+     */
+    @PutMapping("/booking/{bookingId}/confirm-deposit")
+    public ResponseEntity<String> confirmDeposit(HttpServletRequest request,@PathVariable Integer bookingId) {
+        return ResponseEntity.ok(bookingService.confirmDeposit(request,bookingId));
+    }
+
+    /**
+     * Confirm payment
+     * @param request
+     * @param bookingId
+     * @return
+     */
+    @PutMapping("/booking/{bookingId}/confirm-payment")
+    public ResponseEntity<String> confirmPayment(HttpServletRequest request,@PathVariable Integer bookingId) {
+        return ResponseEntity.ok(bookingService.confirmPayment(request,bookingId));
+    }
 }

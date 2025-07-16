@@ -124,6 +124,8 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
         return new WalletCurrentBalanceDTO(totalBalance);
     }
+
+
     /**
      *
      * @param request
