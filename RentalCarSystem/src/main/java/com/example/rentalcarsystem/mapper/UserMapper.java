@@ -3,6 +3,7 @@ package com.example.rentalcarsystem.mapper;
 import com.example.rentalcarsystem.dto.request.user.RegisterRequestDTO;
 import com.example.rentalcarsystem.dto.response.user.ProfileResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.RegisterResponseDTO;
+import com.example.rentalcarsystem.dto.response.user.UserResponseDTO;
 import com.example.rentalcarsystem.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,5 +26,11 @@ public interface UserMapper {
     @Mapping(source = "dateOfBirth", target = "birthDate")
     ProfileResponseDTO toProfileResponseDTO(User user);
 
+
+
+    @Mapping(source = "id",target = "userId")
+    @Mapping(source = "fullName",target = "fullName")
+    @Mapping(source = "role.roleName", target = "roleName")
+    UserResponseDTO toUserResponseDTO(User user);
 
 }

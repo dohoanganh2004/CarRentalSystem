@@ -388,11 +388,11 @@ public class BookingServiceImpl implements BookingService {
 
         }
         bookingRepository.saveAndFlush(booking);
-
-
         return bookingMapper.toCarBookingBaseInfoDTO(booking);
-
     }
+
+
+
 
     /**
      * Method allows customer return the car

@@ -6,15 +6,17 @@ import com.example.rentalcarsystem.dto.request.user.AuthRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.PasswordRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.ProfileRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.RegisterRequestDTO;
-import com.example.rentalcarsystem.dto.response.user.AuthResponseDTO;
-import com.example.rentalcarsystem.dto.response.user.PasswordResponseDTO;
-import com.example.rentalcarsystem.dto.response.user.ProfileResponseDTO;
-import com.example.rentalcarsystem.dto.response.user.RegisterResponseDTO;
+import com.example.rentalcarsystem.dto.response.user.*;
 import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
 import com.example.rentalcarsystem.model.User;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+
+import java.time.LocalDate;
 
 public interface UserService {
+    Page<UserResponseDTO> findAll(String name , String email, String phoneNo,LocalDate dateOfBirth, String roleName, String address, Integer pageNo,
+                                  Integer pageSize, String sortBy, String sortOrder);
     AuthResponseDTO authenticate(AuthRequestDTO authRequestDTO);
     RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO);
      ProfileResponseDTO profile(ProfileRequestDTO profileRequestDTO ,Integer id);

@@ -3,10 +3,7 @@ package com.example.rentalcarsystem.service.user;
 import com.example.rentalcarsystem.dto.ForgotPasswordDTO;
 import com.example.rentalcarsystem.dto.ResetPasswordDTO;
 import com.example.rentalcarsystem.dto.request.user.*;
-import com.example.rentalcarsystem.dto.response.user.AuthResponseDTO;
-import com.example.rentalcarsystem.dto.response.user.PasswordResponseDTO;
-import com.example.rentalcarsystem.dto.response.user.ProfileResponseDTO;
-import com.example.rentalcarsystem.dto.response.user.RegisterResponseDTO;
+import com.example.rentalcarsystem.dto.response.user.*;
 import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
 import com.example.rentalcarsystem.email.Email;
 import com.example.rentalcarsystem.email.EmailService;
@@ -22,11 +19,17 @@ import com.example.rentalcarsystem.repository.UserRepository;
 import com.example.rentalcarsystem.sercutiry.CustomUserDetails;
 
 import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
+import com.example.rentalcarsystem.specification.UserSpecification;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,6 +37,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Service
 @AllArgsConstructor
@@ -51,6 +55,58 @@ public class UserServiceImpl implements UserService {
     private final CarOwnerRepository carOwnerRepository;
     private final EmailService emailService;
 
+
+    /**
+     * Method to view all user of system
+     * @param name name of user
+     * @param email email of user
+     * @param dateOfBirth date of birth of user
+     * @param roleName role of user
+     * @param address address of user
+
+     * @param pageNo page user want to view
+     * @param pageSize quantity of record display on screen
+
+     * @param sortBy
+     * @param sortOrder asc or desc
+     * @return
+     */
+    @Override
+    public Page<UserResponseDTO> findAll(String name, String email,String phoneNo, LocalDate dateOfBirth, String roleName,
+                                         String address, Integer pageNo,
+                                         Integer pageSize, String sortBy, String sortOrder) {
+
+        Specification<User> specification = (root, query, cb) -> cb.conjunction();
+
+        if(name != null && !name.isEmpty()){
+        specification = specification.and(UserSpecification.usernameLike(name));
+    }
+    if(email != null && !email.isEmpty()){
+        specification = specification.and(UserSpecification.emailLike(email));
+    }
+    if(dateOfBirth != null ) {
+        specification = specification.and(UserSpecification.dateOfBirth(dateOfBirth));
+
+    }
+    if(roleName != null && !roleName.isEmpty()){
+        specification = specification.and(UserSpecification.roleLike(roleName));
+    }
+    if(address != null && !address.isEmpty()){
+        specification = specification.and(UserSpecification.addressLike(address));
+    }
+        Sort sort = Sort.by(sortBy);
+
+        if(sortOrder.equals("asc")){
+            sort = sort.ascending();
+        }
+        if(sortOrder.equals("desc")){
+
+            sort = sort.descending();
+        }
+        Pageable pageable = PageRequest.of(pageNo ,pageSize,sort);
+        Page<User> listUser = userRepository.findAll(specification, pageable);
+        return listUser.map(userMapper::toUserResponseDTO);
+    }
 
     /**
      * Login
