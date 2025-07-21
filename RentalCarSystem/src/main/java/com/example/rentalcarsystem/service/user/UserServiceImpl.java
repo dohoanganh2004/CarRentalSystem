@@ -1,10 +1,15 @@
 package com.example.rentalcarsystem.service.user;
 
+import com.example.rentalcarsystem.dto.ForgotPasswordDTO;
+import com.example.rentalcarsystem.dto.ResetPasswordDTO;
 import com.example.rentalcarsystem.dto.request.user.*;
 import com.example.rentalcarsystem.dto.response.user.AuthResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.PasswordResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.ProfileResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.RegisterResponseDTO;
+import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
+import com.example.rentalcarsystem.email.Email;
+import com.example.rentalcarsystem.email.EmailService;
 import com.example.rentalcarsystem.mapper.UserMapper;
 import com.example.rentalcarsystem.model.Carowner;
 import com.example.rentalcarsystem.model.Customer;
@@ -44,6 +49,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final CustomerRepository customerRepository;
     private final CarOwnerRepository carOwnerRepository;
+    private final EmailService emailService;
 
 
     /**
@@ -81,7 +87,7 @@ public class UserServiceImpl implements UserService {
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
         User user = userRepository.findUserByEmail((registerRequestDTO.getEmail()));
         if (user != null) {
-            throw new RuntimeException("User with email " + registerRequestDTO.getEmail() + " already exists");
+            throw new RuntimeException("Email already existed. Please try another email.");
         }
         User registerUser = new User();
         registerUser.setFullName(registerRequestDTO.getFullName());
@@ -90,11 +96,12 @@ public class UserServiceImpl implements UserService {
         String enterPassword = registerRequestDTO.getPassword();
         String confirmPassword = registerRequestDTO.getConfirmPassword();
         System.out.println("PhoneNo: " + registerRequestDTO.getPhoneNo());
-        if (userRepository.existsByEmailAndPhoneNo(registerRequestDTO.getEmail(), registerRequestDTO.getPhoneNo())) {
-            throw new RuntimeException("User already exists");
+        if (userRepository.existsByPhoneNo(registerRequestDTO.getPhoneNo())) {
+            throw new RuntimeException("Phone already exists");
         }
         if (!enterPassword.equals(confirmPassword)) {
-            throw new RuntimeException("Passwords do not match");
+            throw new RuntimeException("“Password and Confirm password \n" +
+                    "don’t match. Please try again.");
         } else {
             registerUser.setPassword(passwordEncoder.encode(enterPassword));
         }
@@ -104,19 +111,21 @@ public class UserServiceImpl implements UserService {
         if (!registerRequestDTO.isAgreeStatus()) {
             throw new RuntimeException("Agree status not set");
         }
+        registerUser.setWallet(new BigDecimal(0));
+        registerUser.setStatus(true);
         userRepository.save(registerUser);
         userRepository.flush();
         log.info("User with email " + registerRequestDTO.getEmail() + " registered successfully");
         System.out.println("PhoneNo:" + registerUser.getPhoneNo());
         System.out.println("id:" + registerUser.getId());
 
-        if(registerRequestDTO.getRoleId() == 2) {
+        if (registerRequestDTO.getRoleId() == 2) {
             Carowner carowner = new Carowner();
             carowner.setUser(registerUser);
             carOwnerRepository.save(carowner);
         }
 
-        if(registerRequestDTO.getRoleId() == 3) {
+        if (registerRequestDTO.getRoleId() == 3) {
             Customer customer = new Customer();
             customer.setUser(registerUser);
             customerRepository.save(customer);
@@ -138,71 +147,143 @@ public class UserServiceImpl implements UserService {
         if (exisUser == null) {
             throw new RuntimeException("User with id " + id + " not found");
         }
-        if(userRepository.existsByEmailAndIdNot(profileRequestDTO.getEmailAddress(), id)) {
-         throw new RuntimeException("User with email " + profileRequestDTO.getEmailAddress() + " already exists");
+        if (userRepository.existsByEmailAndIdNot(profileRequestDTO.getEmailAddress(), id)) {
+            throw new RuntimeException("User with email " + profileRequestDTO.getEmailAddress() + " already exists");
         }
 
-        if(userRepository.existsByPhoneNoAndIdNot(profileRequestDTO.getPhoneNumber(),id)) {
+        if (userRepository.existsByPhoneNoAndIdNot(profileRequestDTO.getPhoneNumber(), id)) {
             throw new RuntimeException("User with phone " + profileRequestDTO.getEmailAddress() + " already exists");
         }
 
 
-            exisUser.setFullName(profileRequestDTO.getFullName());
-            exisUser.setPhoneNo(profileRequestDTO.getPhoneNumber());
-            exisUser.setNationalIDNo(profileRequestDTO.getNationalIDNo());
-            exisUser.setAddress(profileRequestDTO.getAddress());
-            exisUser.setDateOfBirth(profileRequestDTO.getBirthDate());
-            exisUser.setEmail(profileRequestDTO.getEmailAddress());
-            exisUser.setDrivingLicense(profileRequestDTO.getDrivingLicense());
-            System.out.println("PhoneNo:" + exisUser.getPhoneNo());
-            userRepository.save(exisUser);
+        exisUser.setFullName(profileRequestDTO.getFullName());
+        exisUser.setPhoneNo(profileRequestDTO.getPhoneNumber());
+        exisUser.setNationalIDNo(profileRequestDTO.getNationalIDNo());
+        exisUser.setAddress(profileRequestDTO.getAddress());
+        exisUser.setDateOfBirth(profileRequestDTO.getBirthDate());
+        exisUser.setEmail(profileRequestDTO.getEmailAddress());
+        exisUser.setDrivingLicense(profileRequestDTO.getDrivingLicense());
+        System.out.println("PhoneNo:" + exisUser.getPhoneNo());
+        userRepository.save(exisUser);
 
-            ProfileResponseDTO profileResponseDTO = userMapper.toProfileResponseDTO(exisUser);
-            System.out.println("PhoneNo:" + profileResponseDTO.getPhoneNumber());
-            return profileResponseDTO;
-        }
+        ProfileResponseDTO profileResponseDTO = userMapper.toProfileResponseDTO(exisUser);
+        System.out.println("PhoneNo:" + profileResponseDTO.getPhoneNumber());
+        return profileResponseDTO;
+    }
 
 
     /**
      * Change password
+     *
      * @param passwordRequestDTO
      * @return
      */
     @Override
-    public PasswordResponseDTO password(PasswordRequestDTO passwordRequestDTO , Integer id) {
+    public PasswordResponseDTO password(PasswordRequestDTO passwordRequestDTO, Integer id) {
         User exisUser = userRepository.findUserById(id);
-        if(exisUser == null) {
+        if (exisUser == null) {
             throw new RuntimeException("User with id " + id + " not found");
         }
-        String newPassword  = passwordRequestDTO.getNewPassword();
+        String currentPassword = passwordEncoder.encode(exisUser.getPassword());
+        if(!exisUser.getPassword().equals(currentPassword)) {
+            throw new RuntimeException("Current password is incorrect.");
+        }
+        String newPassword = passwordRequestDTO.getNewPassword();
         String confirmPassword = passwordRequestDTO.getConfirmPassword();
 
-        if(!newPassword.equals(confirmPassword)){
-            throw new RuntimeException("Passwords do not match");
+        if (!newPassword.equals(confirmPassword)) {
+            throw new RuntimeException("New password and Confirm \n" +
+                    "password don’t match");
         }
-        System.out.println("enterPassword:" +newPassword);
-        System.out.println("confirmPassword:" +confirmPassword);
+        System.out.println("enterPassword:" + newPassword);
+        System.out.println("confirmPassword:" + confirmPassword);
         exisUser.setPassword(passwordEncoder.encode(passwordRequestDTO.getNewPassword()));
         userRepository.save(exisUser);
-        return new PasswordResponseDTO("Password change sucessful");
+        return new PasswordResponseDTO("Password change successful!");
     }
 
-//    @Override
-//    public User myWallet(HttpServletRequest request) {
-//        String token = getTokenFromRequest(request);
-//        int userId = jwtTokenProvider.getUserIdFromToken(token);
-//        BigDecimal myWallet = userRepository.
-//        return null;
-//    }
+    /**
+     * Method to earn email from user want to reset password
+     *
+     * @param forgotPasswordDTO
+     * @return
+     */
+    @Override
+    public String forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
+        String email = forgotPasswordDTO.getEmail();
+        User forgotPasswordUser = userRepository.findUserByEmail(email);
+
+
+        if (forgotPasswordUser == null) {
+            throw new RuntimeException("User with email " + email + " not found!.Please try again");
+        }
+        sendEmailAfterResertPassword(email);
+        String message = "If this email is exist, we'll send to email with link to reset password";
+        return message;
+    }
 
     /**
+     * Method to reset password
      *
+     * @param resetPasswordDTO
+     * @return String a message to notification to user
+     */
+    @Override
+    public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        User resetPasswordUser = new User();
+        String newPassword = resetPasswordDTO.getNewPassword();
+        String confirmPassword = resetPasswordDTO.getConfirmPassword();
+        if (!newPassword.equals(confirmPassword)) {
+            throw new RuntimeException("Passwords do not match!");
+        }
+        resetPasswordUser.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+        userRepository.save(resetPasswordUser);
+        String message = "Reset password successful";
+        return message;
+    }
+
+    /**
+     * Get wallet of user
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public WalletCurrentBalanceDTO getWalletCurrentBalanceOfUser(HttpServletRequest request) {
+        String token = getTokenFromRequest(request);
+        int userId = jwtTokenProvider.getUserIdFromToken(token);
+        User user = userRepository.findUserById(userId);
+        WalletCurrentBalanceDTO walletCurrentBalanceDTO = new WalletCurrentBalanceDTO();
+        walletCurrentBalanceDTO.setBalance(user.getWallet());
+        return walletCurrentBalanceDTO;
+    }
+
+    /**
+     * Method to send email after reset password
+     *
+     * @param toEmail
+     */
+    public void sendEmailAfterResertPassword(String toEmail) {
+        String subject = "Rent-a-car Password Reset";
+        String body = "We have just received a password reset request for " + toEmail + ".\n" +
+                "Please click here to reset your password. \n" +
+                "For your security, the link will expire in 24 hours or immediately after you \n" +
+                "reset your password.";
+        Email email = new Email();
+        email.setToEmail(toEmail);
+        email.setSubject(subject);
+        email.setBody(body);
+
+    }
+
+
+    /**
      * @param request
      * @return
      */
     private String getTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
+        if (token != null && token.startsWith("Bearer")) {
             token = token.substring(7);
 
         }

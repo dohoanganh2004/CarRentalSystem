@@ -11,7 +11,7 @@ import java.util.List;
 public interface PaymentHistoryRepository extends JpaRepository<PaymentHistory, Integer> {
     List<PaymentHistory> findPaymentHistoriesByUser_Id(Integer userId);
 
-    Page<PaymentHistory> findByUserIdAndPaymentDateBetween(Integer userId, Instant paymentDateAfter, Instant paymentDateBefore,Pageable pageable);
+
 
 
 }

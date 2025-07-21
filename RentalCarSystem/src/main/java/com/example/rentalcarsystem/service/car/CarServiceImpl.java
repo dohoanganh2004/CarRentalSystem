@@ -12,6 +12,10 @@ import com.example.rentalcarsystem.untils.FileStoreService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -126,29 +130,30 @@ public class CarServiceImpl implements CarService {
      * @return
      */
     @Override
-    public List<CarResponseDTO> getOwnerCar(HttpServletRequest request) {
+    public Page<CarResponseDTO> getOwnerCar(HttpServletRequest request,Integer page,Integer size) {
         String token = getTokenFromRequest(request);
         Integer carOwnerId = jwtTokenProvider.getUserIdFromToken(token);
-        List<Car> listCarOfOwner = carRepository.getAllByCarOwner_Id(carOwnerId);
-        List<CarResponseDTO> carResponseDTOList = new ArrayList<>();
-        for (Car car : listCarOfOwner) {
-            CarResponseDTO carResponseDTO = carMapper.toDTO(car);
-            carResponseDTOList.add(carResponseDTO);
-        }
-        return carResponseDTOList;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Car> listCarOfOwner = carRepository.getAllByCarOwner_Id(carOwnerId,pageable);
+
+        return listCarOfOwner.map(carMapper::toDTO);
     }
 
     /**
      * Search Available Car
      *
-     * @param location
-     * @param startDateTime
-     * @param endDateTime
+     * @param location location user want to find car
+     * @param startDateTime time customer want to booking
+     * @param endDateTime time customer want to stop booking
      * @return
      */
     @Override
     public ListResultResponseDTO<CarResponseDTO> searchCar(String location, Instant startDateTime, Instant endDateTime) {
         List<Car> listAvailableCar = carRepository.searchAvailableCars(location, startDateTime, endDateTime);
+        if(endDateTime.isBefore(startDateTime)) {
+            throw new RuntimeException("Drop-off date time must be later and Pick-up date time, please try again.");
+        }
         if (listAvailableCar.isEmpty()) {
             return new ListResultResponseDTO("No cars match your credentials, please try \n" +
                     "again", Collections.emptyList());

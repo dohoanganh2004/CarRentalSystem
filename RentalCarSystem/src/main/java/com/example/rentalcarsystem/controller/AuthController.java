@@ -1,5 +1,7 @@
 package com.example.rentalcarsystem.controller;
 
+import com.example.rentalcarsystem.dto.ForgotPasswordDTO;
+import com.example.rentalcarsystem.dto.ResetPasswordDTO;
 import com.example.rentalcarsystem.dto.request.token.LogoutRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.AuthRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.RegisterRequestDTO;
@@ -17,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/car-rental/auth")
 @Slf4j
 public class AuthController {
     @Autowired
@@ -44,6 +46,13 @@ public class AuthController {
         LogoutResponseDTO logoutResponseDTO = refreshTokenService.logout(logoutRequestDTO.getToken());
         return new ResponseEntity<>(logoutResponseDTO, HttpStatus.OK);
     }
-
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
+        return new ResponseEntity<>(userService.forgotPassword(forgotPasswordDTO), HttpStatus.OK);
+    }
+    @PutMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        return new ResponseEntity<>(userService.resetPassword(resetPasswordDTO), HttpStatus.OK);
+    }
 
 }

@@ -1,15 +1,16 @@
 package com.example.rentalcarsystem.controller;
 
 import com.example.rentalcarsystem.dto.paymentHistory.PaymentHistoryDTO;
+import com.example.rentalcarsystem.dto.wallet.TopUpWalletDTO;
+import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
+import com.example.rentalcarsystem.dto.wallet.WithdrawBalanceDTO;
 import com.example.rentalcarsystem.service.paymetHistory.PaymentHistoryServiceImpl;
+import com.example.rentalcarsystem.service.user.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 
@@ -17,12 +18,15 @@ import java.time.Instant;
  * Controller of payment
  */
 @RestController
-@RequestMapping("/payment-manager")
-public class PaymentHistoryController {
+@RequestMapping("/car-rental/payment-manage")
+public class PaymentController {
 
     private final PaymentHistoryServiceImpl paymentHistoryService;
-    public PaymentHistoryController(PaymentHistoryServiceImpl paymentHistoryService) {
+    private final UserServiceImpl userService;
+    public PaymentController(PaymentHistoryServiceImpl paymentHistoryService,
+                             UserServiceImpl userService) {
         this.paymentHistoryService = paymentHistoryService;
+        this.userService = userService;
     }
 
     /**
@@ -43,6 +47,25 @@ public class PaymentHistoryController {
         Page<PaymentHistoryDTO> listPaymentHistory = paymentHistoryService.paymentHistory(request, from, to, page, size);
         return new ResponseEntity<>(listPaymentHistory, HttpStatus.OK);
 
+    }
+
+    @PostMapping("/topUp-balance")
+    public ResponseEntity<WalletCurrentBalanceDTO> topUpWallet(HttpServletRequest request,
+                                                               @RequestBody TopUpWalletDTO topUpWalletDTO) {
+
+        return ResponseEntity.ok( paymentHistoryService.topUp(request, topUpWalletDTO));
+    }
+
+    @PostMapping("/withdraw-balance")
+    public ResponseEntity<WalletCurrentBalanceDTO> withDrawWallet(HttpServletRequest request,
+                                                                  @RequestBody WithdrawBalanceDTO withdrawBalanceDTO) {
+
+        return ResponseEntity.ok( paymentHistoryService.withdraw(request, withdrawBalanceDTO));
+    }
+
+    @GetMapping("/my-wallet")
+    public ResponseEntity<WalletCurrentBalanceDTO> myWalletBalance(HttpServletRequest request) {
+        return new ResponseEntity<>(userService.getWalletCurrentBalanceOfUser(request), HttpStatus.OK);
     }
 
 }

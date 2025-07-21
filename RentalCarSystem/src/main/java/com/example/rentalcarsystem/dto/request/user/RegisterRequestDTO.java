@@ -2,6 +2,7 @@ package com.example.rentalcarsystem.dto.request.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,7 +15,12 @@ public class RegisterRequestDTO implements Serializable {
     @NotBlank(message = "Please enter your phone number!")
     private String phoneNo;
     @NotBlank(message = "Please enter your password!")
+    @Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{7,}$",
+            message = "Password must be at least 7 characters long, contain at least one letter and one number."
+    )
     private String password;
+
     @NotBlank(message = "Please enter your confirm password!")
     private String confirmPassword;
     @NotNull(message = "Please choose the role")

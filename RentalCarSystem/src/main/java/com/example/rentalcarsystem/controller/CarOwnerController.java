@@ -10,13 +10,14 @@ import com.example.rentalcarsystem.service.car.CarServiceImpl;
 import com.example.rentalcarsystem.service.feedback.FeedBackServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/car-owner")
+@RequestMapping("/car-rental/car-owner")
 public class CarOwnerController {
     private final CarServiceImpl carService;
 
@@ -49,8 +50,10 @@ public class CarOwnerController {
      * @return
      */
     @GetMapping("/car/my-car")
-    public List<CarResponseDTO> getCarByOwnerId(HttpServletRequest request) {
-        return carService.getOwnerCar(request);
+    public ResponseEntity<Page<CarResponseDTO>> getCarByOwnerId(HttpServletRequest request,
+                                                                @RequestParam (defaultValue = "0")Integer page,
+                                                                @RequestParam (defaultValue = "5") Integer size) {
+        return ResponseEntity.ok(carService.getOwnerCar(request, page, size));
     }
 
 
@@ -61,7 +64,7 @@ public class CarOwnerController {
      * @param carId id of update Car
      * @return
      */
-    @PutMapping("/car/my-car/update-details-car/{carId}")
+    @PutMapping("/car/my-car/{carId}/update-details-car")
     public ResponseEntity<CarDetailResponseDTO> updateCarDetails(@RequestBody CarRequestDTO carRequestDTO,
                                                                  @PathVariable Integer carId,
                                                                  HttpServletRequest request) {
@@ -71,11 +74,12 @@ public class CarOwnerController {
 
     /**
      * Method allows car owner can stop renting the car
-     * @param carId
+     *
+     * @param carId id of the car what car owner want to stop rent
      * @param request
      * @return
      */
-    @PutMapping("/car/my-car/stop-reting/{carId}")
+    @PutMapping("/car/my-car/{carId}/stop-reting")
     public ResponseEntity<CarResponseDTO> stopRentalCar(@PathVariable int carId, HttpServletRequest request) {
         return ResponseEntity.ok(carService.stopRentalCar(carId, request));
     }
@@ -87,7 +91,7 @@ public class CarOwnerController {
      * @param request
      * @return
      */
-    @GetMapping("/feedback-report")
+    @GetMapping("/feedback/feedback-report")
     public ResponseEntity<List<FeedBackReportDTO>> getAllFeedBackReport(HttpServletRequest request) {
         List<FeedBackReportDTO> listFeedBackReport = feedBackService.getFeedBackReportByCaOwnerId(request);
         return ResponseEntity.ok(listFeedBackReport);
@@ -95,23 +99,25 @@ public class CarOwnerController {
 
     /**
      * Confirm deposit
+     *
      * @param request
      * @param bookingId
      * @return
      */
     @PutMapping("/booking/{bookingId}/confirm-deposit")
-    public ResponseEntity<String> confirmDeposit(HttpServletRequest request,@PathVariable Integer bookingId) {
-        return ResponseEntity.ok(bookingService.confirmDeposit(request,bookingId));
+    public ResponseEntity<String> confirmDeposit(HttpServletRequest request, @PathVariable Integer bookingId) {
+        return ResponseEntity.ok(bookingService.confirmDeposit(request, bookingId));
     }
 
     /**
      * Confirm payment
+     *
      * @param request
      * @param bookingId
      * @return
      */
     @PutMapping("/booking/{bookingId}/confirm-payment")
-    public ResponseEntity<String> confirmPayment(HttpServletRequest request,@PathVariable Integer bookingId) {
-        return ResponseEntity.ok(bookingService.confirmPayment(request,bookingId));
+    public ResponseEntity<String> confirmPayment(HttpServletRequest request, @PathVariable Integer bookingId) {
+        return ResponseEntity.ok(bookingService.confirmPayment(request, bookingId));
     }
 }

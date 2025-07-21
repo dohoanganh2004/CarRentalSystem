@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+
 @Service
 public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
@@ -38,31 +39,30 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
     }
 
     /**
-     *
-     * @param request
-     * @param from
-     * @param to
-     * @param page
-     * @param size
+     * @param request request from client
+     * @param from date from
+     * @param to date to
+     * @param page page user want to view
+     * @param size quantity of each page
      * @return
      */
     @Override
     public Page<PaymentHistoryDTO> paymentHistory(HttpServletRequest request, Instant from, Instant to, Integer page, Integer size) {
-        if (from == null || to == null) {
-            throw new IllegalArgumentException("from and to cannot be null");
-        }
+
 
         String token = getTokenFromRequest(request);
         int userId = jwtTokenProvider.getUserIdFromToken(token);
         Pageable pageable = PageRequest.of(page, size, Sort.by("paymentDate").descending());
-        Page<PaymentHistory> paymentHistoryPage = paymentHistoryRepository.findByUserIdAndPaymentDateBetween(userId, from, to, pageable);
-
+        Page<PaymentHistory> paymentHistoryPage = paymentHistoryRepository.findAll(pageable);
         return paymentHistoryPage.map(paymentHistoryMapper::toPaymentHistoryDTO);
     }
 
+
+
     /**
      * Method to top up wallet
-     * @param request
+     *
+     * @param request request of client
      * @param topUpWalletDTO
      * @return
      */
@@ -73,7 +73,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         User currentUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User Not Found!"));
         BigDecimal currentBalance = currentUser.getWallet();
         BigDecimal topUpBalance = topUpWalletDTO.getTopUpBalance();
-        if(topUpBalance.compareTo(BigDecimal.ZERO) < 0) {
+        if (topUpBalance.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("TopUp Amount cannot be negative");
         }
         BigDecimal totalBalance = currentBalance.add(topUpBalance);
@@ -81,11 +81,11 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         userRepository.saveAndFlush(currentUser);
         PaymentHistory paymentHistory = new PaymentHistory();
         paymentHistory.setAmount(totalBalance);
-        paymentHistory.setTitle("Top Up Wallet "+ topUpBalance+ "VND");
+        paymentHistory.setTitle("Top Up Wallet " + topUpBalance + "VND");
         paymentHistory.setPaymentDate(Instant.now());
         paymentHistory.setUser(currentUser);
         paymentHistoryRepository.save(paymentHistory);
-          System.out.println(currentUser.getWallet());
+        System.out.println(currentUser.getWallet());
         WalletCurrentBalanceDTO walletCurrentBalanceDTO = new WalletCurrentBalanceDTO(totalBalance);
         walletCurrentBalanceDTO.setBalance(currentUser.getWallet());
         return walletCurrentBalanceDTO;
@@ -93,6 +93,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
     /**
      * Method to withdraw money from wallet
+     *
      * @param request
      * @param withdrawalDTO
      * @return
@@ -117,7 +118,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         userRepository.saveAndFlush(currentUser);
         PaymentHistory paymentHistory = new PaymentHistory();
         paymentHistory.setAmount(withdrawBalance);
-        paymentHistory.setTitle("Top Up Wallet " + withdrawBalance +" VND");
+        paymentHistory.setTitle("Top Up Wallet " + withdrawBalance + " VND");
         paymentHistory.setPaymentDate(Instant.now());
         paymentHistory.setUser(currentUser);
         paymentHistoryRepository.save(paymentHistory);
@@ -127,7 +128,6 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
 
     /**
-     *
      * @param request
      * @return
      */

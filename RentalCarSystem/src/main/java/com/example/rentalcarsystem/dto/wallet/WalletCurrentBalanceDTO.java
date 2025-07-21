@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Data
 public class WalletCurrentBalanceDTO implements Serializable {
     private BigDecimal balance;
-
+    public WalletCurrentBalanceDTO() {}
     public WalletCurrentBalanceDTO(BigDecimal totalBalance) {}
 
 

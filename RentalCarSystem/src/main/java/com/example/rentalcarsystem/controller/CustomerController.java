@@ -23,7 +23,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/car-rental/customer")
 public class CustomerController {
     private final CarServiceImpl carService;
     private final FeedBackServiceImpl feedBackService;
