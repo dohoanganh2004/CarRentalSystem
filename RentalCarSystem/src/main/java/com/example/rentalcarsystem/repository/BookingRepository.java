@@ -2,6 +2,7 @@ package com.example.rentalcarsystem.repository;
 
 import com.example.rentalcarsystem.model.Booking;
 import com.example.rentalcarsystem.model.Car;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;
@@ -19,5 +20,5 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     Car findBookingByCarId(Integer carId);
 
-    boolean existsByCarIdAndStartDateTimeAndEndDateTime(Integer carId, Instant startDateTime, Instant endDateTime);
+    boolean existsByCarIdAndStartDateTimeAndEndDateTimeAndStatusNot(Integer carId, Instant startDateTime, Instant endDateTime, @Size(max = 50) String status);
 }

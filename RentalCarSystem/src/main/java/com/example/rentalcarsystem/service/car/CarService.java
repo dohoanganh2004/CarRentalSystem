@@ -18,5 +18,5 @@ CarDetailResponseDTO getCarById(int id);
 Page<CarResponseDTO> getOwnerCar(HttpServletRequest request ,Integer page,Integer size);
 ListResultResponseDTO<CarResponseDTO> searchCar(String location, Instant startDateTime, Instant endDateTime);
 CarDetailResponseDTO updateCarDetails(CarRequestDTO carRequestDTO,Integer carId,HttpServletRequest request);
-CarResponseDTO stopRentalCar(int carId,HttpServletRequest request);
+String stopRentalCar(int carId,HttpServletRequest request);
 }

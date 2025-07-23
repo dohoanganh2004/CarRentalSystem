@@ -1,6 +1,6 @@
 package com.example.rentalcarsystem.mapper;
 
-import com.example.rentalcarsystem.dto.CarInformationDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarInformationDTO;
 import com.example.rentalcarsystem.dto.request.car.CarRequestDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;

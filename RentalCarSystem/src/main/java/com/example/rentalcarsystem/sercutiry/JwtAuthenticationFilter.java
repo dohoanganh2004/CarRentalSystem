@@ -2,6 +2,7 @@ package com.example.rentalcarsystem.sercutiry;
 
 import com.example.rentalcarsystem.exception.orther_exception.UnAuthorizedException;
 import com.example.rentalcarsystem.model.User;
+import com.example.rentalcarsystem.repository.BlackListTokenRepository;
 import com.example.rentalcarsystem.repository.RefreshTokenRepository;
 import com.example.rentalcarsystem.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -27,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-
+    private final BlackListTokenRepository  blackListTokenRepository;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getTokenFromRequest(request);
@@ -37,6 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (token != null && jwtTokenProvider.validateToken(token)) {
                 if (!refreshTokenRepository.existsByToken(token)) {
                     throw new UnAuthorizedException("Refresh token expired");
+                }
+                if(blackListTokenRepository.existsByToken(token)) {
+                    throw new UnAuthorizedException("Blacklist token expired");
                 }
                 Integer userId = jwtTokenProvider.getUserIdFromToken(token);
                 System.out.println("userId:" + userId);

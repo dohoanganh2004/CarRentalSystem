@@ -1,6 +1,6 @@
 package com.example.rentalcarsystem.mapper;
 
-import com.example.rentalcarsystem.dto.CarBookingBaseInfoDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarBookingBaseInfoDTO;
 import com.example.rentalcarsystem.model.Booking;
 import org.springframework.stereotype.Component;
 

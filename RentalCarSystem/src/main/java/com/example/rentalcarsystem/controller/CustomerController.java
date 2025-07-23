@@ -1,9 +1,10 @@
 package com.example.rentalcarsystem.controller;
 
-import com.example.rentalcarsystem.dto.CarBookingBaseInfoDTO;
-import com.example.rentalcarsystem.dto.CarBookingDetailsDTO;
-import com.example.rentalcarsystem.dto.booking.BookingInformationDTO;
-import com.example.rentalcarsystem.dto.booking.BookingResultDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarBookingBaseInfoDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarBookingDetailsDTO;
+import com.example.rentalcarsystem.dto.request.booking.BookingInformationDTO;
+import com.example.rentalcarsystem.dto.response.booking.BookingResultDTO;
+import com.example.rentalcarsystem.dto.request.feedback.FeedBackRequestDTO;
 import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 import com.example.rentalcarsystem.dto.response.feedback.PublicCarFeedBackDTO;
@@ -58,7 +59,7 @@ public class CustomerController {
      * @param id
      * @return
      */
-    @GetMapping("/car-details/{id}")
+    @GetMapping("car/{id}/car-details")
     public ResponseEntity<CarDetailResponseDTO> viewCarDetail(@PathVariable int id) {
         CarDetailResponseDTO carDetail = carService.getCarById(id);
         return ResponseEntity.ok(carDetail);
@@ -70,7 +71,7 @@ public class CustomerController {
      * @param carId
      * @return
      */
-    @GetMapping("/car/feedback/{id}")
+    @GetMapping("/car/{id}/feedback")
     public ResponseEntity<List<PublicCarFeedBackDTO>> viewPublicCarFeedBack(@RequestBody int carId) {
         return ResponseEntity.ok(feedBackService.getFeedBackByCarId(carId));
 
@@ -106,7 +107,7 @@ public class CustomerController {
      * @param id
      * @return
      */
-    @GetMapping("/booking/my-booking/booking-detail/{id}")
+    @GetMapping("/booking/my-booking/{id}/booking-detail")
     public ResponseEntity<CarBookingDetailsDTO> viewBookingDetails(@PathVariable int id) {
         return ResponseEntity.ok(bookingService.getBookingById(id));
     }
@@ -118,7 +119,7 @@ public class CustomerController {
      * @param request
      * @return
      */
-    @PutMapping("/booking/my-booking/cancel-booking/{bookingId}")
+    @PutMapping("/booking/my-booking/{bookingId}/cancel-booking")
     public ResponseEntity<CarBookingBaseInfoDTO> cancelBooking(@PathVariable int bookingId, HttpServletRequest request) {
         return ResponseEntity.ok(bookingService.cancelBooking(bookingId, request));
     }
@@ -130,7 +131,7 @@ public class CustomerController {
      * @param request
      * @return
      */
-    @PutMapping("/booking/my-booking/pick-up/{bookingId}")
+    @PutMapping("/booking/my-booking/{bookingId}/pick-up")
     public ResponseEntity<CarBookingBaseInfoDTO> pickUpCarBooking(@PathVariable int bookingId, HttpServletRequest request) {
         return ResponseEntity.ok(bookingService.pickUpBooking(bookingId, request));
     }
@@ -141,8 +142,19 @@ public class CustomerController {
      * @param request
      * @return
      */
-    @PutMapping("/booking/my-booking/return-car/{bookingId}")
+    @PutMapping("/booking/my-booking/{bookingId}/return-car")
     public ResponseEntity<BookingResultDTO> returnTheCar( @PathVariable Integer bookingId, HttpServletRequest request) {
         return ResponseEntity.ok(bookingService.returnTheCar(bookingId, request));
     }
+
+    /**
+     * Create feedback after return the car
+     * @param feedBackRequestDTO
+     * @return
+     */
+    @PostMapping("/booking/my-booking/{bookingId}/feedback")
+    public ResponseEntity<?> feedBackBooking(@RequestBody FeedBackRequestDTO feedBackRequestDTO) {
+        return ResponseEntity.ok(feedBackService.createFeedBack(feedBackRequestDTO));
+    }
+
 }

@@ -1,12 +1,12 @@
 package com.example.rentalcarsystem.service.booking;
 
-import com.example.rentalcarsystem.dto.CarBookingBaseInfoDTO;
-import com.example.rentalcarsystem.dto.CarBookingDetailsDTO;
-import com.example.rentalcarsystem.dto.CarInformationDTO;
-import com.example.rentalcarsystem.dto.UserInfoDTO;
-import com.example.rentalcarsystem.dto.booking.BookingDetailsDTO;
-import com.example.rentalcarsystem.dto.booking.BookingInformationDTO;
-import com.example.rentalcarsystem.dto.booking.BookingResultDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarBookingBaseInfoDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarBookingDetailsDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarInformationDTO;
+import com.example.rentalcarsystem.dto.response.booking.UserInfoDTO;
+import com.example.rentalcarsystem.dto.request.booking.BookingDetailsDTO;
+import com.example.rentalcarsystem.dto.request.booking.BookingInformationDTO;
+import com.example.rentalcarsystem.dto.response.booking.BookingResultDTO;
 import com.example.rentalcarsystem.dto.response.rental.MyRentalResponseDTO;
 import com.example.rentalcarsystem.email.Email;
 import com.example.rentalcarsystem.email.EmailService;
@@ -241,8 +241,9 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Start date must be before end date");
         }
         // Kiem tra xem lich dat xe da ton tai hay chua ( check cho an toan )
-        if (bookingRepository.existsByCarIdAndStartDateTimeAndEndDateTime(bookingInformationDTO.getCarId(), startDateTime, endDateTime)) {
-            throw new RuntimeException("Booking already exits!.Please choose another car!");
+        if (bookingRepository.existsByCarIdAndStartDateTimeAndEndDateTimeAndStatusNot(bookingInformationDTO.getCarId(),
+                startDateTime, endDateTime,"Canceled" )) {
+            throw new RuntimeException("Booking already exists.Please choose another car");
         }
 
         booking.setStartDateTime(startDateTime);
@@ -276,6 +277,14 @@ public class BookingServiceImpl implements BookingService {
                 userRepository.save(customerRentCar);
                 booking.setPaymentMethod("My wallet");
                 booking.setStatus("Confirmed");
+
+                // them vao lich su giao dich
+                String payerTitle = " Your account has been deducted " + deposit + " for booking ";
+                // Neu nguoi dung la car owner thi tai khoan se cong them
+                String receiverTitle = "Yout account has been added " + deposit + " for booking ";
+                // Them vao lich su thanh toan
+                paymentHistoryBooking(customerRentCar, carOwner, deposit, booking, payerTitle, receiverTitle);
+
             }
 
         } else {
@@ -285,24 +294,19 @@ public class BookingServiceImpl implements BookingService {
         booking.setPaymentMethod(bookingInformationDTO.getPaymentMethod());
 
         bookingRepository.saveAndFlush(booking);
-
-        // them vao lich su giao dich
-        String payerTitle = " Your account has been deducted " + deposit + " for booking ";
-        // Neu nguoi dung la car owner thi tai khoan se cong them
-        String receiverTitle = "Yout account has been added " + deposit + " for booking ";
-        // Them vao lich su thanh toan
-        paymentHistoryBooking(customerRentCar, carOwner, deposit, booking, payerTitle, receiverTitle);
-
         // Sau khi xe duoc muon thi status cua car se thay doi tu available sang booked
         car.setStatus("Booked");
         carRepository.save(car);
-
         message = String.format("You've successfully booked %s from %s to %s.\n\nYour booking number is: %d\n\nOur operator will contact you with further guidance about pickup.", car.getName(), booking.getStartDateTime(), booking.getEndDateTime(), booking.getId());
         //Send Email to car owner
         sendEmailToCarOwnerAfterBooking(car.getCarOwner().getUser().getEmail(), car.getName(), Instant.now());
 
         return new BookingResultDTO(message);
+
     }
+
+
+
 
     /**
      * This method allow to customer can change status of booking
@@ -324,6 +328,9 @@ public class BookingServiceImpl implements BookingService {
         }
         booking.setStatus("Canceled");
         bookingRepository.saveAndFlush(booking);
+        Car car = carRepository.findById(booking.getCar().getCarOwner().getId()).orElse(null);
+        car.setStatus("Available");
+        carRepository.save(car);
         // After cancel the booking , deposit will return customer's wallet
         User customer = userRepository.findUserById(customerId);
         User carOwner = userRepository.findUserById(booking.getCar().getCarOwner().getId());

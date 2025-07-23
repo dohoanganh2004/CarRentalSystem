@@ -118,12 +118,13 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         userRepository.saveAndFlush(currentUser);
         PaymentHistory paymentHistory = new PaymentHistory();
         paymentHistory.setAmount(withdrawBalance);
-        paymentHistory.setTitle("Top Up Wallet " + withdrawBalance + " VND");
+        paymentHistory.setTitle("Draw with Wallet " + withdrawBalance + " VND");
         paymentHistory.setPaymentDate(Instant.now());
         paymentHistory.setUser(currentUser);
         paymentHistoryRepository.save(paymentHistory);
-
-        return new WalletCurrentBalanceDTO(totalBalance);
+        WalletCurrentBalanceDTO walletCurrentBalanceDTO = new WalletCurrentBalanceDTO(totalBalance);
+        walletCurrentBalanceDTO.setBalance(currentUser.getWallet());
+        return walletCurrentBalanceDTO;
     }
 
 

@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class  JwtTokenProvider {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
@@ -34,15 +34,41 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Create token
+     * Create access token
      *
      * @param userDetails
      * @return
      */
 
-    public String generateToken(CustomUserDetails userDetails) {
+    public String generateAccessToken(CustomUserDetails userDetails) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtProperties.getExpiration());
+        Map<String, String> claims = new HashMap<>();
+        claims.put("role", userDetails.getUser().getRole().getId().toString());
+        claims.put("role-name", userDetails.getUser().getRole().getRoleName());
+        claims.put("email", userDetails.getUser().getEmail());
+        claims.put("fullName", userDetails.getUser().getFullName());
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .setSubject(Integer.toString(userDetails.getUser().getId()))
+
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+        log.info(">>> JWT Token (Base64): {}", token);
+
+        return token;
+    }
+
+    /**
+     * Create refresh token
+     * @param userDetails
+     * @return
+     */
+    public String generateRefreshToken(CustomUserDetails userDetails) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtProperties.getRefresh());
         Map<String, String> claims = new HashMap<>();
         claims.put("role", userDetails.getUser().getRole().getId().toString());
         claims.put("role-name", userDetails.getUser().getRole().getRoleName());
@@ -124,6 +150,13 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return String.valueOf(claims.get("fullName"));
+    }
+    public Claims extractClaimsFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     /**

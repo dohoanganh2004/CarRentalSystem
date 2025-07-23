@@ -1,10 +1,8 @@
-package com.example.rentalcarsystem.dto;
+package com.example.rentalcarsystem.dto.response.booking;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data

@@ -257,7 +257,7 @@ public class CarServiceImpl implements CarService {
      * @return
      */
     @Override
-    public CarResponseDTO stopRentalCar(int carId, HttpServletRequest request) {
+    public String  stopRentalCar(int carId, HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int carOwnerId = jwtTokenProvider.getUserIdFromToken(token);
 
@@ -270,15 +270,15 @@ public class CarServiceImpl implements CarService {
         }
 
 
-        if (car.getStatus().equalsIgnoreCase("Booked")) {
+        if (!("Available").equals(car.getStatus())) {
             throw new RuntimeException("Do not allow to stop a car that is currently booked");
         }
 
 
         car.setStatus("Stopped");
         carRepository.save(car);
-
-        return carMapper.toDTO(car);
+        String message = " Car has been stopped.Please go to My Car to view details.";
+        return message;
     }
 
 

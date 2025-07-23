@@ -1,11 +1,13 @@
 package com.example.rentalcarsystem.controller;
 
-import com.example.rentalcarsystem.dto.ForgotPasswordDTO;
-import com.example.rentalcarsystem.dto.ResetPasswordDTO;
+import com.example.rentalcarsystem.dto.request.token.RefreshTokenRequestDTO;
+import com.example.rentalcarsystem.dto.request.user.ForgotPasswordDTO;
+import com.example.rentalcarsystem.dto.request.user.ResetPasswordDTO;
 import com.example.rentalcarsystem.dto.request.token.LogoutRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.AuthRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.RegisterRequestDTO;
 import com.example.rentalcarsystem.dto.response.token.LogoutResponseDTO;
+import com.example.rentalcarsystem.dto.response.token.TokenResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.AuthResponseDTO;
 import com.example.rentalcarsystem.dto.response.user.RegisterResponseDTO;
 import com.example.rentalcarsystem.repository.RefreshTokenRepository;
@@ -42,17 +44,21 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<LogoutResponseDTO> logout(@RequestBody LogoutRequestDTO logoutRequestDTO) {
-        System.out.println(logoutRequestDTO.getToken());
-        LogoutResponseDTO logoutResponseDTO = refreshTokenService.logout(logoutRequestDTO.getToken());
+
+        LogoutResponseDTO logoutResponseDTO = refreshTokenService.logout(logoutRequestDTO.getAccessToken(),logoutRequestDTO.getRefreshToken());
         return new ResponseEntity<>(logoutResponseDTO, HttpStatus.OK);
     }
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
         return new ResponseEntity<>(userService.forgotPassword(forgotPasswordDTO), HttpStatus.OK);
     }
     @PutMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(ResetPasswordDTO resetPasswordDTO) {
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
         return new ResponseEntity<>(userService.resetPassword(resetPasswordDTO), HttpStatus.OK);
+    }
+    @PostMapping("/refresh-token")
+    public ResponseEntity<TokenResponseDTO> getAccessToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
+      return ResponseEntity.ok(refreshTokenService.refreshToken(refreshTokenRequestDTO));
     }
 
 }

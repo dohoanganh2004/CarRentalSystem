@@ -1,11 +1,10 @@
 package com.example.rentalcarsystem.service.booking;
 
-import com.example.rentalcarsystem.dto.CarBookingBaseInfoDTO;
-import com.example.rentalcarsystem.dto.CarBookingDetailsDTO;
-import com.example.rentalcarsystem.dto.booking.BookingDetailsDTO;
-import com.example.rentalcarsystem.dto.booking.BookingInformationDTO;
-import com.example.rentalcarsystem.dto.booking.BookingResultDTO;
-import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarBookingBaseInfoDTO;
+import com.example.rentalcarsystem.dto.response.booking.CarBookingDetailsDTO;
+import com.example.rentalcarsystem.dto.request.booking.BookingDetailsDTO;
+import com.example.rentalcarsystem.dto.request.booking.BookingInformationDTO;
+import com.example.rentalcarsystem.dto.response.booking.BookingResultDTO;
 import com.example.rentalcarsystem.dto.response.rental.MyRentalResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 

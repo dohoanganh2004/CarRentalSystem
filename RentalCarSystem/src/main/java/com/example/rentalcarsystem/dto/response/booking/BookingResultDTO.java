@@ -1,4 +1,4 @@
-package com.example.rentalcarsystem.dto.booking;
+package com.example.rentalcarsystem.dto.response.booking;
 
 import lombok.Data;
 

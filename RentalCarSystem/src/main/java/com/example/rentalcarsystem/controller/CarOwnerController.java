@@ -37,7 +37,7 @@ public class CarOwnerController {
      * @return
      */
     @PostMapping("/car/add-car")
-    public ResponseEntity<CarResponseDTO> creareNewCar(@RequestBody CarRequestDTO carRequestDTO, HttpServletRequest request) {
+    public ResponseEntity<CarResponseDTO> createNewCar(@RequestBody CarRequestDTO carRequestDTO, HttpServletRequest request) {
         CarResponseDTO car = carService.creareNewCar(carRequestDTO, request);
         return ResponseEntity.ok(car);
     }
@@ -80,7 +80,7 @@ public class CarOwnerController {
      * @return
      */
     @PutMapping("/car/my-car/{carId}/stop-reting")
-    public ResponseEntity<CarResponseDTO> stopRentalCar(@PathVariable int carId, HttpServletRequest request) {
+    public ResponseEntity<?> stopRentalCar(@PathVariable int carId, HttpServletRequest request) {
         return ResponseEntity.ok(carService.stopRentalCar(carId, request));
     }
 
@@ -91,9 +91,10 @@ public class CarOwnerController {
      * @param request
      * @return
      */
-    @GetMapping("/feedback/feedback-report")
-    public ResponseEntity<List<FeedBackReportDTO>> getAllFeedBackReport(HttpServletRequest request) {
-        List<FeedBackReportDTO> listFeedBackReport = feedBackService.getFeedBackReportByCaOwnerId(request);
+    @GetMapping("/feedback/feedback-report/{carId}")
+    public ResponseEntity<FeedBackReportDTO> getAllFeedBackReport(HttpServletRequest request,
+    @PathVariable Integer carId) {
+        FeedBackReportDTO listFeedBackReport = feedBackService.getFeedBackReportByCarId(request,carId);
         return ResponseEntity.ok(listFeedBackReport);
     }
 

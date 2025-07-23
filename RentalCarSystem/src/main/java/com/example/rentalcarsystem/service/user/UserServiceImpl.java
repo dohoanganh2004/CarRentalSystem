@@ -1,7 +1,7 @@
 package com.example.rentalcarsystem.service.user;
 
-import com.example.rentalcarsystem.dto.ForgotPasswordDTO;
-import com.example.rentalcarsystem.dto.ResetPasswordDTO;
+import com.example.rentalcarsystem.dto.request.user.ForgotPasswordDTO;
+import com.example.rentalcarsystem.dto.request.user.ResetPasswordDTO;
 import com.example.rentalcarsystem.dto.request.user.*;
 import com.example.rentalcarsystem.dto.response.user.*;
 import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
@@ -125,8 +125,9 @@ public class UserServiceImpl implements UserService {
         );
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String token = jwtTokenProvider.generateToken(customUserDetails);
-        return new AuthResponseDTO(token);
+        String accessToken = jwtTokenProvider.generateAccessToken(customUserDetails);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(customUserDetails);
+        return new AuthResponseDTO(accessToken, refreshToken);
 
 
     }
@@ -266,52 +267,56 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public String forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
-        String email = forgotPasswordDTO.getEmail();
-        User forgotPasswordUser = userRepository.findUserByEmail(email);
+            String email = forgotPasswordDTO.getEmail();
+            System.out.println("email:" + email);
+            User forgotPasswordUser = userRepository.findUserByEmail(email);
 
 
-        if (forgotPasswordUser == null) {
-            throw new RuntimeException("User with email " + email + " not found!.Please try again");
+            if (forgotPasswordUser == null) {
+                throw new RuntimeException("User not found!.Please try again");
+            }
+            sendEmailAfterResetPassword(email);
+            String message = "If this email is exist, we'll send to email with link to reset password";
+            return message;
         }
-        sendEmailAfterResertPassword(email);
-        String message = "If this email is exist, we'll send to email with link to reset password";
-        return message;
-    }
 
-    /**
-     * Method to reset password
-     *
-     * @param resetPasswordDTO
-     * @return String a message to notification to user
-     */
-    @Override
-    public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
-        User resetPasswordUser = new User();
-        String newPassword = resetPasswordDTO.getNewPassword();
-        String confirmPassword = resetPasswordDTO.getConfirmPassword();
-        if (!newPassword.equals(confirmPassword)) {
-            throw new RuntimeException("Passwords do not match!");
+        /**
+         * Method to reset password
+         *
+         * @param resetPasswordDTO
+         * @return String a message to notification to user
+         */
+        @Override
+        public String resetPassword(ResetPasswordDTO resetPasswordDTO) {
+            User resetPasswordUser = userRepository.findUserByEmail(resetPasswordDTO.getEmail());
+            if (resetPasswordUser == null) {
+                throw new RuntimeException("User not found!.Please try again");
+            }
+            String newPassword = resetPasswordDTO.getNewPassword();
+            String confirmPassword = resetPasswordDTO.getConfirmPassword();
+            if (!newPassword.equals(confirmPassword)) {
+                throw new RuntimeException("Passwords do not match!");
+            }
+            resetPasswordUser.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+            userRepository.save(resetPasswordUser);
+            String message = "Reset password successful";
+            return message;
         }
-        resetPasswordUser.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
-        userRepository.save(resetPasswordUser);
-        String message = "Reset password successful";
-        return message;
-    }
 
-    /**
-     * Get wallet of user
-     *
-     * @param request
-     * @return
-     */
-    @Override
-    public WalletCurrentBalanceDTO getWalletCurrentBalanceOfUser(HttpServletRequest request) {
-        String token = getTokenFromRequest(request);
-        int userId = jwtTokenProvider.getUserIdFromToken(token);
-        User user = userRepository.findUserById(userId);
-        WalletCurrentBalanceDTO walletCurrentBalanceDTO = new WalletCurrentBalanceDTO();
-        walletCurrentBalanceDTO.setBalance(user.getWallet());
-        return walletCurrentBalanceDTO;
+        /**
+         * Get wallet of user
+         *
+         * @param request
+         * @return
+         */
+        @Override
+        public WalletCurrentBalanceDTO getWalletCurrentBalanceOfUser(HttpServletRequest request) {
+            String token = getTokenFromRequest(request);
+            int userId = jwtTokenProvider.getUserIdFromToken(token);
+            User user = userRepository.findUserById(userId);
+            WalletCurrentBalanceDTO walletCurrentBalanceDTO = new WalletCurrentBalanceDTO();
+            walletCurrentBalanceDTO.setBalance(user.getWallet());
+            return walletCurrentBalanceDTO;
     }
 
     /**
@@ -319,7 +324,7 @@ public class UserServiceImpl implements UserService {
      *
      * @param toEmail
      */
-    public void sendEmailAfterResertPassword(String toEmail) {
+    public void sendEmailAfterResetPassword(String toEmail) {
         String subject = "Rent-a-car Password Reset";
         String body = "We have just received a password reset request for " + toEmail + ".\n" +
                 "Please click here to reset your password. \n" +
@@ -329,6 +334,7 @@ public class UserServiceImpl implements UserService {
         email.setToEmail(toEmail);
         email.setSubject(subject);
         email.setBody(body);
+        emailService.sendEmail(email);
 
     }
 

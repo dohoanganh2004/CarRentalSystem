@@ -1,4 +1,4 @@
-package com.example.rentalcarsystem.dto;
+package com.example.rentalcarsystem.dto.request.user;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

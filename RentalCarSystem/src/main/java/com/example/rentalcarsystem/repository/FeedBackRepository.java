@@ -2,6 +2,7 @@ package com.example.rentalcarsystem.repository;
 
 import com.example.rentalcarsystem.dto.response.feedback.FeedBackReportDTO;
 import com.example.rentalcarsystem.dto.response.feedback.PublicCarFeedBackDTO;
+import com.example.rentalcarsystem.dto.response.feedback.UserFeedBackDTO;
 import com.example.rentalcarsystem.model.Feedback;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,11 +12,13 @@ import java.util.List;
 
 public interface FeedBackRepository extends JpaRepository<Feedback, Integer> {
     @Query("""
-    SELECT new com.example.rentalcarsystem.dto.response.feedback.FeedBackReportDTO(
-        AVG(f.ratings),               
+    SELECT new com.example.rentalcarsystem.dto.response.feedback.UserFeedBackDTO(
+                    
         u.fullName,                     
-        f.content,                     
-        f.dateTime,                     
+        f.content,   
+        f.ratings,                    
+        f.dateTime, 
+                          
         c.name,                         
         ci.frontImageUrl,            
         b.startDateTime,                
@@ -27,11 +30,11 @@ public interface FeedBackRepository extends JpaRepository<Feedback, Integer> {
     JOIN cus.user u
     JOIN b.car c
     LEFT JOIN c.carImage ci
-    WHERE c.carOwner.id = :carOwnerId
+    WHERE c.id = :carId
     GROUP BY f.id, u.fullName, f.content, f.dateTime,
              c.name, ci.frontImageUrl, b.startDateTime, b.endDateTime
 """)
-    List<FeedBackReportDTO> findFeedbackByCarOwnerId(@Param("carOwnerId") int carOwnerId);
+    List<UserFeedBackDTO> findFeedbackByCarId(@Param("carId") int carId);
 
 
 

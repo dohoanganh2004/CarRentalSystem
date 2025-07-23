@@ -37,7 +37,8 @@ public class SpringSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/car-rental/auth/**").permitAll()
-                        .requestMatchers("/car-rental/admin/**").permitAll()
+
+                        .requestMatchers("/car-rental/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/car-rental/customer/**").hasAuthority("ROLE_CUSTOMER")
                         .requestMatchers("/car-rental/car-owner/**").hasAuthority("ROLE_CAROWNER")
                         .anyRequest().authenticated())

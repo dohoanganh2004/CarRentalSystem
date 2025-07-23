@@ -22,7 +22,7 @@ public class AdminController {
         this.userService = userService;
     }
 
-    @GetMapping("/user")
+    @GetMapping("/users")
     public ResponseEntity<Page<UserResponseDTO>> getAllUsers(@RequestParam (required = false) String name,
                                                              @RequestParam (required = false)String email,
                                                              @RequestParam (required = false) String phoneNo,

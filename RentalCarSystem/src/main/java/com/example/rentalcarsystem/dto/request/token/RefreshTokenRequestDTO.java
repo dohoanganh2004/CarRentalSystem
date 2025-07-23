@@ -4,7 +4,6 @@ import lombok.Data;
 
 import java.io.Serializable;
 @Data
-public class LogoutRequestDTO implements Serializable {
-    private String accessToken;
+public class RefreshTokenRequestDTO implements Serializable {
     private String refreshToken;
 }
