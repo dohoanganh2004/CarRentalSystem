@@ -1,4 +1,4 @@
-package com.example.rentalcarsystem.dto.paymentHistory;
+package com.example.rentalcarsystem.dto.response.paymentHistory;
 
 import lombok.Data;
 
@@ -14,7 +14,8 @@ public class PaymentHistoryDTO implements Serializable {
     private Instant paymentDate;
     private Integer bookingId;
     private String carName;
-    private String sender;
+    private String user;
+
 }
 
 

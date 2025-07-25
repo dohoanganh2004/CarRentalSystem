@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 public class CarResponseDTO implements Serializable {
-    private String message;
+
     private String name;
     private String frontImageUrl;
     private String backImageUrl;

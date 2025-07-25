@@ -33,15 +33,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = getTokenFromRequest(request);
         try {
-
+            if(refreshTokenRepository.existsByToken(token)) {
+                throw new UnAuthorizedException("Don't use refresh token to access this resource");
+            }
 
             if (token != null && jwtTokenProvider.validateToken(token)) {
-                if (!refreshTokenRepository.existsByToken(token)) {
+                if (blackListTokenRepository.existsByToken(token)) {
                     throw new UnAuthorizedException("Refresh token expired");
                 }
-                if(blackListTokenRepository.existsByToken(token)) {
-                    throw new UnAuthorizedException("Blacklist token expired");
-                }
+
                 Integer userId = jwtTokenProvider.getUserIdFromToken(token);
                 System.out.println("userId:" + userId);
                 User user = userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException("User Not Found"));

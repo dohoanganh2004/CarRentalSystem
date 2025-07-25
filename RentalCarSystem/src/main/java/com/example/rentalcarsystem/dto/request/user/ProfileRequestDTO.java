@@ -1,5 +1,6 @@
 package com.example.rentalcarsystem.dto.request.user;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class ProfileRequestDTO implements Serializable {
     @NotNull(message = "Please enter your date of birth")
     private LocalDate birthDate;
     @NotBlank(message = "Please enter your email address")
+    @Email(message = "Please enter available email")
     private String emailAddress;
     @NotBlank(message = "Please enter your driving license")
     private String drivingLicense;

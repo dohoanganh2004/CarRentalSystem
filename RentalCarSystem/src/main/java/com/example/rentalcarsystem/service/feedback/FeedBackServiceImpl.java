@@ -12,11 +12,15 @@ import com.example.rentalcarsystem.repository.CarRepository;
 import com.example.rentalcarsystem.repository.FeedBackRepository;
 import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class FeedBackServiceImpl implements FeedBackService {
 
@@ -33,9 +37,9 @@ public class FeedBackServiceImpl implements FeedBackService {
     }
 
     /**
-     * Add feed back from customer
+     * Method allows customer to feedback booking after return the car
      * @param feedBackRequestDTO
-     * @return
+     * @return notification to people
      */
     @Override
     public String createFeedBack(FeedBackRequestDTO feedBackRequestDTO) {
@@ -54,10 +58,11 @@ public class FeedBackServiceImpl implements FeedBackService {
     }
 
 
+
     /**
-     * Get All Feed Back By CarOwner
+     * Method allows car owner can view feed back of this car
      * @param request
-     * @return
+     * @return feedback report from user about car
      */
     @Override
     public FeedBackReportDTO getFeedBackReportByCarId(HttpServletRequest request,Integer carId) {
@@ -78,9 +83,9 @@ public class FeedBackServiceImpl implements FeedBackService {
     }
 
     /**
-     * Get All FeedBack By CarID
-     * @param carId
-     * @return
+     * Method get all feedback of a car by car id
+     * @param carId id of the car
+     * @return list of public feedback
      */
     @Override
     public List<PublicCarFeedBackDTO> getFeedBackByCarId(Integer carId) {
@@ -91,10 +96,10 @@ public class FeedBackServiceImpl implements FeedBackService {
 
 
     /**
-     * Get Token from request
+     * Method to get token from request
      *
      * @param request
-     * @return
+     * @return token
      */
     private String getTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
@@ -107,8 +112,8 @@ public class FeedBackServiceImpl implements FeedBackService {
 
     /**
      * Method to calculate rating of car
-     * @param carId
-     * @return
+     * @param carId id of car what user want to view rating
+     * @return avg rating of this car
      */
     public Double findRatingOfCar(Integer carId) {
         List<Booking> listBooking = bookingRepository.findByCarId(carId);

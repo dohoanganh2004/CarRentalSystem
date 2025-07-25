@@ -37,9 +37,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         refreshTokenRepository.delete(refreshtoken);
         Claims claims = jwtTokenProvider.extractClaimsFromToken(accessToken);
         Date expiration = claims.getExpiration();
-        LocalDateTime expiryDate = expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        Instant expiryDate = expiration.toInstant();
         Blacklisttoken blacklisttoken = new Blacklisttoken();
         blacklisttoken.setToken(accessToken);
+        blacklisttoken.setExpiryDate(expiryDate);
         blackListTokenRepository.save(blacklisttoken);
 
         return new LogoutResponseDTO("Logout successful") ;
@@ -55,11 +56,14 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         Refreshtoken refreshToken = refreshTokenRepository.findByToken(refreshTokenRequestDTO.getRefreshToken()).orElseThrow(()->new RuntimeException("Refresh token not found"));
         if(refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            throw new RuntimeException("Refresh token expired");
+            throw new RuntimeException("Please go to login!");
         }
+        refreshTokenRepository.delete(refreshToken);
         User user = refreshToken.getUser();
         CustomUserDetails userDetails = new CustomUserDetails(user);
-        return new TokenResponseDTO(jwtTokenProvider.generateAccessToken(userDetails));
+        String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+        return new TokenResponseDTO(accessToken, newRefreshToken);
 
     }
 }

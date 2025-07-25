@@ -8,4 +8,5 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class TokenResponseDTO implements Serializable {
     private String accessToken;
+    private String refreshToken;
 }

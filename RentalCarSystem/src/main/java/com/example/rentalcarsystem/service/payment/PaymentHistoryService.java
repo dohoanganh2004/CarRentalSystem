@@ -1,10 +1,10 @@
-package com.example.rentalcarsystem.service.paymetHistory;
+package com.example.rentalcarsystem.service.payment;
 
 
-import com.example.rentalcarsystem.dto.paymentHistory.PaymentHistoryDTO;
-import com.example.rentalcarsystem.dto.wallet.TopUpWalletDTO;
-import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
-import com.example.rentalcarsystem.dto.wallet.WithdrawBalanceDTO;
+import com.example.rentalcarsystem.dto.response.paymentHistory.PaymentHistoryDTO;
+import com.example.rentalcarsystem.dto.request.wallet.TopUpWalletDTO;
+import com.example.rentalcarsystem.dto.response.wallet.WalletCurrentBalanceDTO;
+import com.example.rentalcarsystem.dto.request.wallet.WithdrawBalanceDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 

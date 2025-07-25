@@ -1,5 +1,6 @@
 package com.example.rentalcarsystem.controller;
 
+import com.example.rentalcarsystem.dto.request.car.SearchRequestDTO;
 import com.example.rentalcarsystem.dto.response.booking.CarBookingBaseInfoDTO;
 import com.example.rentalcarsystem.dto.response.booking.CarBookingDetailsDTO;
 import com.example.rentalcarsystem.dto.request.booking.BookingInformationDTO;
@@ -37,18 +38,15 @@ public class CustomerController {
     }
 
     /**
-     * Customer can search car by location, startDateTime , endDateTime
      *
-     * @param location
-     * @param startDateTime
-     * @param endDateTime
+     * Search available car
+     * @param searchRequestDTO
      * @return
      */
     @GetMapping("/search-car")
-    public ResponseEntity<ListResultResponseDTO<CarResponseDTO>> searchAvailableCar(@RequestParam String location, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime) {
-        Instant start = startDateTime.atZone(ZoneId.systemDefault()).toInstant();
-        Instant end = endDateTime.atZone(ZoneId.systemDefault()).toInstant();
-        ListResultResponseDTO<CarResponseDTO> listAvailableCar = carService.searchCar(location, start, end);
+    public ResponseEntity<ListResultResponseDTO<CarResponseDTO>> searchAvailableCar(@RequestBody SearchRequestDTO searchRequestDTO) {
+
+        ListResultResponseDTO<CarResponseDTO> listAvailableCar = carService.searchCar(searchRequestDTO);
         return ResponseEntity.ok(listAvailableCar);
 
     }

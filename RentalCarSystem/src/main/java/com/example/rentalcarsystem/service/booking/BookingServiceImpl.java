@@ -17,7 +17,9 @@ import com.example.rentalcarsystem.repository.*;
 import com.example.rentalcarsystem.sercutiry.JwtTokenProvider;
 import com.example.rentalcarsystem.untils.DateUntil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
+@Transactional
 public class BookingServiceImpl implements BookingService {
 
 
@@ -64,6 +68,7 @@ public class BookingServiceImpl implements BookingService {
      * @return
      */
     @Override
+
     public MyRentalResponseDTO listBookings(HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         Integer customerId = jwtTokenProvider.getUserIdFromToken(token);
@@ -109,6 +114,7 @@ public class BookingServiceImpl implements BookingService {
      * @return
      */
     @Override
+    @Transactional
     public String updateBooking(Integer bookingId, BookingDetailsDTO bookingDetailsDTO) {
         Booking updatedBooking = bookingRepository.findBookingById(bookingId);
         if (updatedBooking == null) {
@@ -218,21 +224,24 @@ public class BookingServiceImpl implements BookingService {
      * @return
      */
     @Override
+    @Transactional
     public BookingResultDTO rentalCar(BookingInformationDTO bookingInformationDTO, HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int customerId = jwtTokenProvider.getUserIdFromToken(token);
-
+        log.info("[Booking] Start booking process for customerId = {}, carId = {}", customerId, bookingInformationDTO.getCarId());
         Booking booking = new Booking();
         //Kiem tra thoi gian dat lich
         Instant startDateTime = bookingInformationDTO.getBookingDetailsDTO().getPickupDateTime();
         Instant endDateTime = bookingInformationDTO.getBookingDetailsDTO().getDropDateTime();
         // Kiem tra nguoi dung co  nhap thong tin ngay dat xe va tra xe ko
         if (startDateTime == null || endDateTime == null) {
+            log.warn("[Booking] Start or end time is null. customerId = {}", customerId);
             throw new RuntimeException("Start and end date must not be null");
         }
 
         // kiem tra thoi gian dat xe trong qua khu
         if (startDateTime.isBefore(Instant.now())) {
+            log.warn("[Booking] Start time is in the past. customerId = {}, start = {}", customerId, startDateTime);
             throw new RuntimeException("Start date cannot be in the past");
         }
 
@@ -249,6 +258,9 @@ public class BookingServiceImpl implements BookingService {
         booking.setStartDateTime(startDateTime);
         booking.setEndDateTime(endDateTime);
         Car car = carRepository.findById(bookingInformationDTO.getCarId()).orElse(null);
+        if(Boolean.FALSE.equals(car.getIsActive())) {
+         throw new RuntimeException("You can't book this car because this car is not active");
+        }
         booking.setCar(car);
 
         Customer customer = customerRepository.findById(customerId).orElse(null);
@@ -269,7 +281,7 @@ public class BookingServiceImpl implements BookingService {
             // Kiem tra xem tien trong vi co du thanh toan tien dat coc hay khong!
 
             if (customerWallet.subtract(deposit).compareTo(BigDecimal.ZERO) < 0) {
-                throw new RuntimeException("Customer wallet does not have enough money!");
+                throw new RuntimeException("Customer wallet does not have enough money!.Please top up more money.");
             } else {
                 // Neu co du tien thi tru luon tien trong vi cua nguoi thue xe
                 customerWallet = customerWallet.subtract(deposit);
@@ -281,7 +293,7 @@ public class BookingServiceImpl implements BookingService {
                 // them vao lich su giao dich
                 String payerTitle = " Your account has been deducted " + deposit + " for booking ";
                 // Neu nguoi dung la car owner thi tai khoan se cong them
-                String receiverTitle = "Yout account has been added " + deposit + " for booking ";
+                String receiverTitle = "Your account has been added " + deposit + " for booking ";
                 // Them vao lich su thanh toan
                 paymentHistoryBooking(customerRentCar, carOwner, deposit, booking, payerTitle, receiverTitle);
 
@@ -294,16 +306,27 @@ public class BookingServiceImpl implements BookingService {
         booking.setPaymentMethod(bookingInformationDTO.getPaymentMethod());
 
         bookingRepository.saveAndFlush(booking);
-        // Sau khi xe duoc muon thi status cua car se thay doi tu available sang booked
-        car.setStatus("Booked");
-        carRepository.save(car);
-        message = String.format("You've successfully booked %s from %s to %s.\n\nYour booking number is: %d\n\nOur operator will contact you with further guidance about pickup.", car.getName(), booking.getStartDateTime(), booking.getEndDateTime(), booking.getId());
-        //Send Email to car owner
-        sendEmailToCarOwnerAfterBooking(car.getCarOwner().getUser().getEmail(), car.getName(), Instant.now());
 
+         message = String.format(
+                "You've successfully booked %s from %s to %s.\n" +
+                        "Your booking number is: %d\n" +
+                        "Our operator will contact you with further guidance about pickup.",
+                car.getName(),
+                booking.getStartDateTime(),
+                booking.getEndDateTime(),
+                booking.getId()
+        );
+
+        //Send Email to car owner
+        String rentalDate = dateUntil.formatInstant(Instant.now());
+
+        sendEmailToCarOwnerAfterBooking(car.getCarOwner().getUser().getEmail(), car.getName(),rentalDate);
         return new BookingResultDTO(message);
 
     }
+
+
+
 
 
 
@@ -315,6 +338,7 @@ public class BookingServiceImpl implements BookingService {
      * @return base information of change status
      */
     @Override
+    @Transactional
     public CarBookingBaseInfoDTO cancelBooking(Integer bookingId, HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int customerId = jwtTokenProvider.getUserIdFromToken(token);
@@ -323,17 +347,16 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getCustomer().getId().equals(customerId)) {
             throw new RuntimeException("Customer is not owner of this booking");
         }
-        if (!(status.equals("Confirmed") || status.equals("Pending deposit") || status.equals("Stopped"))) {
+        if (!(status.equals("Confirmed") || status.equals("Pending deposit") )) {
             throw new RuntimeException("Booking status is not confirmed or Pending deposit or stopped");
         }
         booking.setStatus("Canceled");
-        bookingRepository.saveAndFlush(booking);
-        Car car = carRepository.findById(booking.getCar().getCarOwner().getId()).orElse(null);
-        car.setStatus("Available");
-        carRepository.save(car);
+        bookingRepository.save(booking);
+        Car car = carRepository.findById(booking.getCar().getId()).orElse(null);
+
         // After cancel the booking , deposit will return customer's wallet
         User customer = userRepository.findUserById(customerId);
-        User carOwner = userRepository.findUserById(booking.getCar().getCarOwner().getId());
+        User carOwner = car.getCarOwner().getUser();
         BigDecimal customerWallet = customer.getWallet();
         BigDecimal carOwnerWallet = carOwner.getWallet();
         // tinh toan so tien dat coc
@@ -353,7 +376,8 @@ public class BookingServiceImpl implements BookingService {
         // Them vao lich su thanh toan
         paymentHistoryBooking(customer, carOwner, deposit, booking, payerTitle, receiverTitle);
         // gui email thong bao co car owner
-        sendEmailToCarOwnerAfterCancel(booking.getCar().getCarOwner().getUser().getEmail(), booking.getCar().getName(), Instant.now());
+        String cancelDate = dateUntil.formatInstant(Instant.now());
+        sendEmailToCarOwnerAfterCancel(booking.getCar().getCarOwner().getUser().getEmail(), booking.getCar().getName(), cancelDate );
         return bookingMapper.toCarBookingBaseInfoDTO(booking);
     }
 
@@ -387,14 +411,20 @@ public class BookingServiceImpl implements BookingService {
         int customerId = jwtTokenProvider.getUserIdFromToken(token);
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking not found"));
         String status = booking.getStatus();
+        Instant now = Instant.now();
+        if(now.isBefore(booking.getStartDateTime()) || now.isAfter(booking.getEndDateTime())) {
+            throw  new RuntimeException("You cannot accept this reservation because the time has not yet arrived!");
+        }
         if (!booking.getCustomer().getId().equals(customerId)) {
             throw new RuntimeException("Customer is not owner of this booking");
         }
         if (booking.getStatus().equals("Confirmed")) {
             booking.setStatus("In-Progress");
 
+        } else {
+            throw new RuntimeException("Status must be confirmed");
         }
-        bookingRepository.saveAndFlush(booking);
+        bookingRepository.save(booking);
         return bookingMapper.toCarBookingBaseInfoDTO(booking);
     }
 
@@ -409,12 +439,13 @@ public class BookingServiceImpl implements BookingService {
      * @return string to notification to user
      */
     @Override
+    @Transactional
     public BookingResultDTO returnTheCar(Integer bookingId, HttpServletRequest request) {
         String token = getTokenFromRequest(request);
         int customerId = jwtTokenProvider.getUserIdFromToken(token);
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking not found"));
         Car car = booking.getCar();
-        User carOwner = userRepository.findUserById(car.getCarOwner().getId());
+        User carOwner = car.getCarOwner().getUser();
         User customer = userRepository.findUserById(customerId);
         if (customer == null) {
             throw new RuntimeException("User not found");
@@ -423,7 +454,9 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Customer is not owner of this booking!");
         }
 
-
+        if(!booking.getStatus().equals("In-Progress")) {
+            throw new RuntimeException("Status must be in-progress");
+        }
         LocalDateTime starDate = booking.getStartDateTime().atZone(ZoneId.systemDefault()).toLocalDateTime();
         // ngay tra phai lay ngay thuc the khi tra
         ZonedDateTime zonedNow = ZonedDateTime.now(ZoneId.systemDefault());
@@ -446,6 +479,7 @@ public class BookingServiceImpl implements BookingService {
 
         }
         // if total price more than deposit
+        if(booking.getPaymentMethod().equals("My wallet")) {
         if (totalPrice.compareTo(deposit) > 0) {
             if (totalPrice.subtract(deposit).compareTo(customerWallet) > 0) {
                 booking.setStatus("Pending Payment");
@@ -457,13 +491,16 @@ public class BookingServiceImpl implements BookingService {
                 receiverTitle = "Your account has been added " + returnMoney + " for booking " + bookingId;
                 paymentHistoryBooking(customer, carOwner, deposit, booking, payerTitle, receiverTitle);
             }
+        } else {
+            booking.setStatus("Pending Payment");
+        }
         }
         booking.setStatus("Completed");
-        car.setStatus("Available");
-        carRepository.save(car);
-        bookingRepository.saveAndFlush(booking);
+        bookingRepository.save(booking);
+
         // Send mail
-        sendEmailToCarOwnerAfterReturnCar(booking.getCar().getCarOwner().getUser().getEmail(), booking.getCar().getName(), Instant.now());
+        String returnDate = dateUntil.formatInstant(Instant.now());
+        sendEmailToCarOwnerAfterReturnCar(booking.getCar().getCarOwner().getUser().getEmail(), booking.getCar().getName(), returnDate);
         String message = "Thank you for returning the car!.See you soon!";
         return new BookingResultDTO(message);
 
@@ -484,7 +521,7 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getCar().getCarOwner().getId() != carOwnerId) {
             throw new RuntimeException("You are not owner of this car");
         }
-        ;
+
         booking.setStatus("Confirmed");
         bookingRepository.saveAndFlush(booking);
         String message = "Thank you for confirming the deposit";
@@ -495,8 +532,8 @@ public class BookingServiceImpl implements BookingService {
      * Method allows to car owner confirm payment
      *
      * @param request
-     * @param bookingId
-     * @return
+     * @param bookingId id of this booking
+     * @return notification to user
      */
     @Override
     public String confirmPayment(HttpServletRequest request, Integer bookingId) {
@@ -507,7 +544,7 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("You are not owner of this car");
         }
         if (booking.getStatus().equals("Pending Payment")) {
-            booking.setStatus("Confirmed");
+            booking.setStatus("Completed");
         }
         String message = "Thank you for confirming the payment";
         return message;
@@ -521,7 +558,7 @@ public class BookingServiceImpl implements BookingService {
      * @param carName     name of booking car
      * @param bookingTime time booking car
      */
-    public void sendEmailToCarOwnerAfterBooking(String toEmail, String carName, Instant bookingTime) {
+    public void sendEmailToCarOwnerAfterBooking(String toEmail, String carName, String bookingTime) {
         String subject = "Your car has been booked";
         String body = "Congratulations! Your car " + carName + " has been booked at \n" + bookingTime + ". Please go to your wallet to check if the deposit \n" + "has been paid and go to your car’s details page to confirm the deposit. \n" + "Thank you!";
         Email email = new Email();
@@ -538,7 +575,7 @@ public class BookingServiceImpl implements BookingService {
      * @param carName    name of booking car
      * @param cancelTime time cancel the booking
      */
-    public void sendEmailToCarOwnerAfterCancel(String toEmail, String carName, Instant cancelTime) {
+    public void sendEmailToCarOwnerAfterCancel(String toEmail, String carName, String cancelTime) {
         String subject = "A booking with your car has been cancelled";
         String body = ": Please be informed that a booking with your car" + carName + " \n" + "has been cancelled at" + cancelTime + ". The deposit will be \n" + "returned to the customer’s wallet";
         Email email = new Email();
@@ -555,7 +592,7 @@ public class BookingServiceImpl implements BookingService {
      * @param carName    name of booking car
      * @param returnTime time return the car
      */
-    public void sendEmailToCarOwnerAfterReturnCar(String toEmail, String carName, Instant returnTime) {
+    public void sendEmailToCarOwnerAfterReturnCar(String toEmail, String carName, String returnTime) {
         String subject = "Your car has been returned";
         String body = "Please be informed that your car" + carName + " has been \n" + "returned at" + returnTime + ". Please go to your wallet to check if \n" + "the remaining payment has been paid and go to your car’s details page\n" + "to confirm the payment. Thank you!";
         Email email = new Email();
@@ -576,6 +613,8 @@ public class BookingServiceImpl implements BookingService {
      * @param receiverTitle
      */
     public void paymentHistoryBooking(User payer, User receiver, BigDecimal amount, Booking booking, String payerTitle, String receiverTitle) {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        Instant instant = now.toInstant();
         if (payer.getWallet().compareTo(amount) < 0) {
             throw new RuntimeException("Please top up more money to your wallet");
         }
@@ -583,7 +622,7 @@ public class BookingServiceImpl implements BookingService {
         PaymentHistory payerPaymentHistory = new PaymentHistory();
         payerPaymentHistory.setAmount(amount);
         payerPaymentHistory.setTitle(payerTitle);
-        payerPaymentHistory.setPaymentDate(Instant.now());
+        payerPaymentHistory.setPaymentDate(instant);
         payerPaymentHistory.setBooking(booking);
         payerPaymentHistory.setUser(payer);
         paymentHistoryRepository.save(payerPaymentHistory);
@@ -591,7 +630,7 @@ public class BookingServiceImpl implements BookingService {
         PaymentHistory receiverPaymentHistory = new PaymentHistory();
         receiverPaymentHistory.setAmount(amount);
         receiverPaymentHistory.setTitle(receiverTitle);
-        receiverPaymentHistory.setPaymentDate(Instant.now());
+        receiverPaymentHistory.setPaymentDate(instant);
         receiverPaymentHistory.setBooking(booking);
         receiverPaymentHistory.setUser(receiver);
         paymentHistoryRepository.save(receiverPaymentHistory);
@@ -608,8 +647,10 @@ public class BookingServiceImpl implements BookingService {
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
-
         }
         return token;
     }
+
 }
+
+

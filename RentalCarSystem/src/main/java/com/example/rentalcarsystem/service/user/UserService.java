@@ -7,7 +7,7 @@ import com.example.rentalcarsystem.dto.request.user.PasswordRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.ProfileRequestDTO;
 import com.example.rentalcarsystem.dto.request.user.RegisterRequestDTO;
 import com.example.rentalcarsystem.dto.response.user.*;
-import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
+import com.example.rentalcarsystem.dto.response.wallet.WalletCurrentBalanceDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 

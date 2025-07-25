@@ -13,9 +13,9 @@ import java.time.temporal.ChronoUnit;
 @Component
 public class BookingMapper {
     /**
-     * Tranfer data from booking to CarBookingBaseInfoDTO
-     * @param booking
-     * @return
+     * Convert data from booking to CarBookingBaseInfoDTO
+     * @param booking obj booking
+     * @return base information of booking car
      */
     public CarBookingBaseInfoDTO toCarBookingBaseInfoDTO(Booking booking) {
         CarBookingBaseInfoDTO carBookingBaseInfoDTO = new CarBookingBaseInfoDTO();

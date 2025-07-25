@@ -1,6 +1,6 @@
 package com.example.rentalcarsystem.mapper;
 
-import com.example.rentalcarsystem.dto.paymentHistory.PaymentHistoryDTO;
+import com.example.rentalcarsystem.dto.response.paymentHistory.PaymentHistoryDTO;
 import com.example.rentalcarsystem.model.PaymentHistory;
 import org.springframework.stereotype.Component;
 
@@ -20,10 +20,27 @@ public class PaymentHistoryMapper {
         paymentHistoryDTO.setPaymentAmount(paymentHistory.getAmount());
         paymentHistoryDTO.setTitle(paymentHistory.getTitle());
         paymentHistoryDTO.setPaymentDate(paymentHistory.getPaymentDate());
-        paymentHistoryDTO.setBookingId(paymentHistory.getBooking().getId());
-        paymentHistoryDTO.setCarName(paymentHistory.getBooking().getCar().getName());
-        paymentHistoryDTO.setSender(paymentHistory.getUser().getFullName());
-        return paymentHistoryDTO;
 
+        if (paymentHistory.getBooking() != null) {
+            paymentHistoryDTO.setBookingId(paymentHistory.getBooking().getId());
+
+            if (paymentHistory.getBooking().getCar() != null) {
+                paymentHistoryDTO.setCarName(paymentHistory.getBooking().getCar().getName());
+            } else {
+                paymentHistoryDTO.setCarName("N/A");
+            }
+        } else {
+            paymentHistoryDTO.setBookingId(null);
+            paymentHistoryDTO.setCarName("N/A");
+        }
+
+        if (paymentHistory.getUser() != null) {
+            paymentHistoryDTO.setUser(paymentHistory.getUser().getFullName());
+        } else {
+            paymentHistoryDTO.setUser("N/A");
+        }
+
+        return paymentHistoryDTO;
     }
+
 }

@@ -12,7 +12,7 @@ public class EmailService {
 
     /**
      * Method to send email
-     * @param email
+     * @param email obj email
      */
     public void  sendEmail(Email email) {
     SimpleMailMessage message = new SimpleMailMessage();

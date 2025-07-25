@@ -1,4 +1,4 @@
-package com.example.rentalcarsystem.dto.wallet;
+package com.example.rentalcarsystem.dto.response.wallet;
 
 import lombok.Data;
 

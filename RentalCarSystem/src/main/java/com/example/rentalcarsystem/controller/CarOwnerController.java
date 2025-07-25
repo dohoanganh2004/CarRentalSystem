@@ -5,6 +5,8 @@ import com.example.rentalcarsystem.dto.response.car.CarDetailResponseDTO;
 import com.example.rentalcarsystem.dto.response.car.CarResponseDTO;
 import com.example.rentalcarsystem.dto.response.feedback.FeedBackReportDTO;
 
+import com.example.rentalcarsystem.dto.response.other.PagingResponse;
+import com.example.rentalcarsystem.model.Car;
 import com.example.rentalcarsystem.service.booking.BookingService;
 import com.example.rentalcarsystem.service.car.CarServiceImpl;
 import com.example.rentalcarsystem.service.feedback.FeedBackServiceImpl;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -38,7 +41,7 @@ public class CarOwnerController {
      */
     @PostMapping("/car/add-car")
     public ResponseEntity<CarResponseDTO> createNewCar(@RequestBody CarRequestDTO carRequestDTO, HttpServletRequest request) {
-        CarResponseDTO car = carService.creareNewCar(carRequestDTO, request);
+        CarResponseDTO car = carService.createNewCar(carRequestDTO, request);
         return ResponseEntity.ok(car);
     }
 
@@ -50,10 +53,14 @@ public class CarOwnerController {
      * @return
      */
     @GetMapping("/car/my-car")
-    public ResponseEntity<Page<CarResponseDTO>> getCarByOwnerId(HttpServletRequest request,
-                                                                @RequestParam (defaultValue = "0")Integer page,
-                                                                @RequestParam (defaultValue = "5") Integer size) {
-        return ResponseEntity.ok(carService.getOwnerCar(request, page, size));
+    public ResponseEntity<?> getCarByOwnerId(HttpServletRequest request,
+                                             @RequestParam(defaultValue = "0") Integer page,
+                                             @RequestParam(defaultValue = "5") Integer size,
+                                             @RequestParam (required = false) String name,
+                                             @RequestParam (required = false)BigDecimal price,
+                                             @RequestParam (required = false) String status) {
+        Page<CarResponseDTO> listCar = carService.getOwnerCar(request, name, price, status, page, size);
+        return ResponseEntity.ok(new PagingResponse<>(listCar));
     }
 
 
@@ -61,7 +68,7 @@ public class CarOwnerController {
      * Update Car by owner
      *
      * @param carRequestDTO
-     * @param carId id of update Car
+     * @param carId         id of update Car
      * @return
      */
     @PutMapping("/car/my-car/{carId}/update-details-car")
@@ -75,7 +82,7 @@ public class CarOwnerController {
     /**
      * Method allows car owner can stop renting the car
      *
-     * @param carId id of the car what car owner want to stop rent
+     * @param carId   id of the car what car owner want to stop rent
      * @param request
      * @return
      */
@@ -93,8 +100,8 @@ public class CarOwnerController {
      */
     @GetMapping("/feedback/feedback-report/{carId}")
     public ResponseEntity<FeedBackReportDTO> getAllFeedBackReport(HttpServletRequest request,
-    @PathVariable Integer carId) {
-        FeedBackReportDTO listFeedBackReport = feedBackService.getFeedBackReportByCarId(request,carId);
+                                                                  @PathVariable Integer carId) {
+        FeedBackReportDTO listFeedBackReport = feedBackService.getFeedBackReportByCarId(request, carId);
         return ResponseEntity.ok(listFeedBackReport);
     }
 

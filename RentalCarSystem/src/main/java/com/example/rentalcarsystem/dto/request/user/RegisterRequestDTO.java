@@ -1,5 +1,6 @@
 package com.example.rentalcarsystem.dto.request.user;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -11,6 +12,7 @@ public class RegisterRequestDTO implements Serializable {
     @NotBlank(message = "Please enter full name!")
     private String fullName;
     @NotBlank(message = "Please enter your email address!")
+    @Email(message = "Please enter available email.")
     private String email;
     @NotBlank(message = "Please enter your phone number!")
     private String phoneNo;

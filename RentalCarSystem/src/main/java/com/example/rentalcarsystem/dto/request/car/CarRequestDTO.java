@@ -49,9 +49,8 @@ public class CarRequestDTO implements Serializable {
     private BigDecimal deposit;
     @NotBlank(message = "Please choose term of use!")
     private String termsOfUse;
-    @NotBlank(message = "Please choose status!")
-    private String status;
 
+    private Boolean isActive;
 
     private MultipartFile registrationPaper;
     private String registrationPaperUrl;

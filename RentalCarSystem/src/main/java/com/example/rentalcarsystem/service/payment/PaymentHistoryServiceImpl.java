@@ -1,9 +1,9 @@
-package com.example.rentalcarsystem.service.paymetHistory;
+package com.example.rentalcarsystem.service.payment;
 
-import com.example.rentalcarsystem.dto.paymentHistory.PaymentHistoryDTO;
-import com.example.rentalcarsystem.dto.wallet.TopUpWalletDTO;
-import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
-import com.example.rentalcarsystem.dto.wallet.WithdrawBalanceDTO;
+import com.example.rentalcarsystem.dto.response.paymentHistory.PaymentHistoryDTO;
+import com.example.rentalcarsystem.dto.request.wallet.TopUpWalletDTO;
+import com.example.rentalcarsystem.dto.response.wallet.WalletCurrentBalanceDTO;
+import com.example.rentalcarsystem.dto.request.wallet.WithdrawBalanceDTO;
 import com.example.rentalcarsystem.mapper.PaymentHistoryMapper;
 import com.example.rentalcarsystem.model.PaymentHistory;
 import com.example.rentalcarsystem.model.User;
@@ -44,7 +44,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
      * @param to date to
      * @param page page user want to view
      * @param size quantity of each page
-     * @return
+     * @return payment history dto
      */
     @Override
     public Page<PaymentHistoryDTO> paymentHistory(HttpServletRequest request, Instant from, Instant to, Integer page, Integer size) {
@@ -60,11 +60,11 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
 
     /**
-     * Method to top up wallet
+     * Method to top up money to wallet
      *
      * @param request request of client
      * @param topUpWalletDTO
-     * @return
+     * @return current balance of user
      */
     @Override
     public WalletCurrentBalanceDTO topUp(HttpServletRequest request, TopUpWalletDTO topUpWalletDTO) {
@@ -74,13 +74,13 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         BigDecimal currentBalance = currentUser.getWallet();
         BigDecimal topUpBalance = topUpWalletDTO.getTopUpBalance();
         if (topUpBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("TopUp Amount cannot be negative");
+            throw new IllegalArgumentException("Top up amount cannot be negative!");
         }
         BigDecimal totalBalance = currentBalance.add(topUpBalance);
         currentUser.setWallet(totalBalance);
         userRepository.saveAndFlush(currentUser);
         PaymentHistory paymentHistory = new PaymentHistory();
-        paymentHistory.setAmount(totalBalance);
+        paymentHistory.setAmount(topUpBalance);
         paymentHistory.setTitle("Top Up Wallet " + topUpBalance + "VND");
         paymentHistory.setPaymentDate(Instant.now());
         paymentHistory.setUser(currentUser);
@@ -96,7 +96,7 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
      *
      * @param request
      * @param withdrawalDTO
-     * @return
+     * @return current balance of user
      */
     @Override
     public WalletCurrentBalanceDTO withdraw(HttpServletRequest request, WithdrawBalanceDTO withdrawalDTO) {
@@ -106,10 +106,10 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
         BigDecimal currentBalance = currentUser.getWallet();
         BigDecimal withdrawBalance = withdrawalDTO.getWithdrawalAmount();
         if (withdrawBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Withdrawal Amount cannot be negative");
+            throw new IllegalArgumentException("Withdraw amount cannot be negative");
         }
         if (withdrawBalance.compareTo(currentBalance) > 0) {
-            throw new IllegalArgumentException("Withdrawal amount exceeds current balance");
+            throw new IllegalArgumentException("Withdraw amount exceeds current balance");
         }
 
         BigDecimal totalBalance = currentBalance.subtract(withdrawBalance);
@@ -129,8 +129,9 @@ public class PaymentHistoryServiceImpl implements PaymentHistoryService {
 
 
     /**
+     * Method to get token from request
      * @param request
-     * @return
+     * @return token
      */
     private String getTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");

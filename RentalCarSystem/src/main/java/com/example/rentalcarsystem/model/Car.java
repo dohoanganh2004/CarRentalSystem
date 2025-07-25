@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 
@@ -87,9 +88,6 @@ public class Car {
     @JoinColumn(name = "CarImageID")
     private Carimage carImage;
 
-    @Size(max = 50)
-    @Column(name = "Status", length = 50)
-    private String status;
 
     @Size(max = 255)
     @Column(name = "RegistrationPaperUrl")
@@ -102,5 +100,9 @@ public class Car {
     @Size(max = 255)
     @Column(name = "InsuranceUrl")
     private String insuranceUrl;
+
+    @ColumnDefault("1")
+    @Column(name = "is_active")
+    private Boolean isActive;
 
 }

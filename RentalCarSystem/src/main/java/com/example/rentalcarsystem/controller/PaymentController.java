@@ -1,10 +1,11 @@
 package com.example.rentalcarsystem.controller;
 
-import com.example.rentalcarsystem.dto.paymentHistory.PaymentHistoryDTO;
-import com.example.rentalcarsystem.dto.wallet.TopUpWalletDTO;
-import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
-import com.example.rentalcarsystem.dto.wallet.WithdrawBalanceDTO;
-import com.example.rentalcarsystem.service.paymetHistory.PaymentHistoryServiceImpl;
+import com.example.rentalcarsystem.dto.response.other.PagingResponse;
+import com.example.rentalcarsystem.dto.response.paymentHistory.PaymentHistoryDTO;
+import com.example.rentalcarsystem.dto.request.wallet.TopUpWalletDTO;
+import com.example.rentalcarsystem.dto.response.wallet.WalletCurrentBalanceDTO;
+import com.example.rentalcarsystem.dto.request.wallet.WithdrawBalanceDTO;
+import com.example.rentalcarsystem.service.payment.PaymentHistoryServiceImpl;
 import com.example.rentalcarsystem.service.user.UserServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
@@ -39,13 +40,13 @@ public class PaymentController {
      * @return
      */
     @GetMapping("/history")
-    public ResponseEntity<Page<PaymentHistoryDTO>> viewPaymentHistory(HttpServletRequest request,
+    public ResponseEntity<?> viewPaymentHistory(HttpServletRequest request,
                                                                       @RequestParam (required = false) Instant from,
                                                                       @RequestParam (required = false) Instant to,
                                                                       @RequestParam (defaultValue = "0")Integer page,
                                                                       @RequestParam (defaultValue = "5")Integer size) {
         Page<PaymentHistoryDTO> listPaymentHistory = paymentHistoryService.paymentHistory(request, from, to, page, size);
-        return new ResponseEntity<>(listPaymentHistory, HttpStatus.OK);
+        return  ResponseEntity.ok(new PagingResponse<>(listPaymentHistory));
 
     }
 

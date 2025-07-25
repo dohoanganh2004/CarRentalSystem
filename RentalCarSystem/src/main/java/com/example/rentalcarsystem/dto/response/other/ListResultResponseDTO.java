@@ -8,11 +8,11 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class ListResultResponseDTO<T> {
     private String message;
     private List<T> data;
 
 
-    public ListResultResponseDTO(String noResult, List<T> objects) {
-    }
+
 }

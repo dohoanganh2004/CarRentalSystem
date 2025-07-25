@@ -4,7 +4,7 @@ import com.example.rentalcarsystem.dto.request.user.ForgotPasswordDTO;
 import com.example.rentalcarsystem.dto.request.user.ResetPasswordDTO;
 import com.example.rentalcarsystem.dto.request.user.*;
 import com.example.rentalcarsystem.dto.response.user.*;
-import com.example.rentalcarsystem.dto.wallet.WalletCurrentBalanceDTO;
+import com.example.rentalcarsystem.dto.response.wallet.WalletCurrentBalanceDTO;
 import com.example.rentalcarsystem.email.Email;
 import com.example.rentalcarsystem.email.EmailService;
 import com.example.rentalcarsystem.mapper.UserMapper;
